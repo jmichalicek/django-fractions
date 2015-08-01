@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.template import Template, Context
 
 from decimal import Decimal
 
@@ -36,3 +37,30 @@ class QuantityToDecimalTest(TestCase):
                          quantity_to_decimal('1 1/3').quantize(Decimal('0.01')))
         self.assertEqual(Decimal('1.25'), quantity_to_decimal('1 and 1/4'))
         self.assertEqual(Decimal('1.25'), quantity_to_decimal('1-1/4'))
+
+
+class DisplayFractionTagTest(TestCase):
+    """
+    Test the quantity_to_decimal() function
+    """
+
+    def test_whole_number(self):
+        template = Template("""
+        {% load fractions %}
+        {% display_fraction 1 %}
+        """)
+        c = Context({})
+
+        rendered = template.render(c)
+        self.assertEqual(rendered.strip(), '1')
+
+    def test_simple_fraction(self):
+        template = Template("""
+        {% load fractions %}
+        {% display_fraction .5 %}
+        """)
+        c = Context({})
+
+        rendered = template.render(c)
+        self.assertEqual(rendered.strip(), '<sup>1</sup>&frasl;<sub>2</sub>')
+
