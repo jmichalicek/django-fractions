@@ -41,6 +41,7 @@ setup(
     include_package_data=True,
     install_requires=[
     ],
+    test_suite='runtests.run_tests',
     license="BSD",
     zip_safe=False,
     keywords='django-fractions',
