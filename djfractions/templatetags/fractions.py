@@ -11,7 +11,7 @@ register = template.Library()
 
 
 @register.simple_tag(name='display_fraction')
-def display_fraction(value, reduce_fraction=True, mixed_numbers=True, coerce_thirds=True):
+def display_fraction(value, mixed_numbers=True, coerce_thirds=True):
     """
     Display a numeric value as an html fraction using
     <sup>numerator</sup>&frasl;<sub>denominator</sub>
@@ -42,11 +42,6 @@ def display_fraction(value, reduce_fraction=True, mixed_numbers=True, coerce_thi
         int_part = f.numerator // f.denominator
         f = fractions.Fraction(f.numerator - (int_part * f.denominator), f.denominator)
         fraction_string = u'%d' % int_part
-
-    if reduce_fraction:
-        gcd = fractions.gcd(f.numerator, f.denominator)
-        # reduce to lowest terms
-        f = f/gcd
 
     fraction_string = '%s <sup>%d</sup>&frasl;<sub>%d</sub>' % (fraction_string, f.numerator, f.denominator)
     return mark_safe(fraction_string.strip())
