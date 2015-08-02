@@ -32,12 +32,12 @@ In templates::
     {% display_fraction 1.25 %}
 
 In Forms::
+
     from djfractions.forms import DecimalFractionField
     from django import forms
 
     class MyForm(froms.Form):
         a_fraction = DecimalFractionField()
-
 
 
 Features
