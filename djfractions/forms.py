@@ -41,8 +41,6 @@ class DecimalFractionField(forms.Field):
 
             if f.denominator == 1:
                 return str(f)
-            #elif dec == Decimal('.33') or dec == Decimal('.3') or dec == Decimal('.67') or dec == Decimal('.6'):
-            #    f = f.limit_denominator(3)
 
             fraction_string = ''
             if f.numerator > f.denominator:
