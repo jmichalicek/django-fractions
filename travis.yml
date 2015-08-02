@@ -1,6 +1,11 @@
 language: python
 install:
+  - pip install tox
   - pip install -r requirements-test.txt
+python:
+  - "2.7"
+  - "3.3"
+  - "3.4"
 script:
   - tox
 env:
