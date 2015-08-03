@@ -53,9 +53,9 @@ class DisplayFractionTagTest(TestCase):
         {% display_fraction frac %}
         """)
 
-        self.template_reduce_false = Template("""
+        self.template_limit_denominator = Template("""
         {% load fractions %}
-        {% display_fraction frac False %}
+        {% display_fraction frac 3 %}
         """)
 
 
@@ -74,14 +74,18 @@ class DisplayFractionTagTest(TestCase):
         rendered = self.template.render(c)
         self.assertEqual(rendered.strip(), '<sup>1</sup>&frasl;<sub>2</sub>')
 
-
     def test_complex_number(self):
         c = Context({'frac': 1.5})
         rendered = self.template.render(c)
         self.assertEqual(rendered.strip(), '1 <sup>1</sup>&frasl;<sub>2</sub>')
 
+    def limit_denominator(self):
+        c = Context({'frac': 1/3.0})
+        rendered = self.template_limit_denominator.render(c)
+        self.assertEqual(rendered.strip(), '1 <sup>1</sup>&frasl;<sub>3</sub>')
 
-class DecimealFractionFieldTest(TestCase):
+
+class DecimalFractionFieldTest(TestCase):
 
     def test_prepare_value_int(self):
         """

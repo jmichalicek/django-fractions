@@ -6,18 +6,22 @@ from django.utils.safestring import mark_safe
 from decimal import Decimal
 import fractions
 
+from .. import get_fraction_parts
 
 register = template.Library()
 
 
 @register.simple_tag(name='display_fraction')
-def display_fraction(value, mixed_numbers=True, coerce_thirds=True):
+def display_fraction(value, limit_denominator=None, allow_mixed_numbers=True,
+                     coerce_thirds=True):
     """
     Display a numeric value as an html fraction using
     <sup>numerator</sup>&frasl;<sub>denominator</sub>
     if value is not a whole number.
 
-    :param bool reduce_fraction: Reduce fractions to lowest terms.  Defaults to True.
+    :param bool limit_denominator: Limit the denominator to this value.  Defaults to None,
+        which in effect results in the :meth:`fractions.Fraction.limit_denominator()`
+        default of `1000000`
     :param bool mixed_numbers: Convert to mixed numbers such as 1 1/2 or keep improper
         fractions such as 3/2.  Defaults to True.
     :param bool coerce_thirds:  If True then .3 repeating is forced to 1/3
@@ -25,23 +29,23 @@ def display_fraction(value, mixed_numbers=True, coerce_thirds=True):
         Defaults to True.
     """
 
-    f = fractions.Fraction(value)
-    dec = Decimal(value).quantize(Decimal('0.00'))
+    try:
+        whole_number, numerator, denominator = get_fraction_parts(value,
+                                                                  allow_mixed_numbers,
+                                                                  limit_denominator,
+                                                                  coerce_thirds)
+        if (whole_number or whole_number == 0) and not numerator \
+           and allow_mixed_numbers:
+            return u'%s' % whole_number
 
-    # this if/elif, or at least part of it, should possibly live after
-    # mixed number handling and maybe fraction reduction as well
-    if f.denominator == 1:
-        return str(f)
-    elif coerce_thirds and (dec == Decimal('.33') or dec == Decimal('.3') or
-                            dec == Decimal('.67') or dec == Decimal('.6')):
-        f = f.limit_denominator(3)
+        if whole_number and allow_mixed_numbers:
+            fraction_string = u'%d' % whole_number
+        else:
+            fraction_string = u''
 
-    fraction_string = ''
-    if mixed_numbers and f.numerator > f.denominator:
-        # convert to mixed number
-        int_part = f.numerator // f.denominator
-        f = fractions.Fraction(f.numerator - (int_part * f.denominator), f.denominator)
-        fraction_string = u'%d' % int_part
+        fraction_string = '%s <sup>%d</sup>&frasl;<sub>%d</sub>' % (fraction_string, numerator, denominator)
 
-    fraction_string = '%s <sup>%d</sup>&frasl;<sub>%d</sub>' % (fraction_string, f.numerator, f.denominator)
+    except (ValueError, InvalidOperation) as e:
+        fraction_string = u'%s' % value
+
     return mark_safe(fraction_string.strip())

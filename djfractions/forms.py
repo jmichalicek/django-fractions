@@ -5,17 +5,30 @@ from django.core.exceptions import ValidationError
 from django.core.validators import EMPTY_VALUES
 from django.utils.translation import ugettext_lazy as _, ungettext_lazy
 
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 import fractions
 import re
 
-from . import quantity_to_decimal, is_number
+from . import quantity_to_decimal, is_number, get_fraction_parts
 
 
 class DecimalFractionField(forms.Field):
     """
     Displays and takes input as a fraction string such as 1/4 or 1 1/4
     but stores as a Decimal.
+
+    fraction = DecimalFractionField(coerce_thirds=True, limit_denominator=None,
+                                    use_mixed_numbers=True)
+
+    :ivar bool coerce_thirds: Defaults to True.  If True
+        then .3 repeating is forced to 1/3 rather than 3/10, 33/100, etc.
+        and .66 and .67 are forced to 2/3.
+    :ivar int limit_denominator: Set a maximum denominator to be used on
+        fractions created from the field input.
+    :ivar bool use_mixed_numbers: If True initial values which are
+        decimals and floats greater than 1 will be converted to a mixed
+        number such as `1 1/2` in the form field's value.  If False then
+        improper fractions such as `3/2` will be created. Defaults to True.
     """
 
     default_error_messages = {
@@ -23,45 +36,38 @@ class DecimalFractionField(forms.Field):
     }
 
     def __init__(self, *args, **kwargs):
-        """
-        :param bool coerce_thirds: Defaults to True.  If True
-            then .3 repeating is forced to 1/3 rather than 3/10, 33/100, etc.
-            and .66 and .67 are forced to 2/3.
-        :param int limit_denominator: Set a maximum denominator to be used on
-            fractions created from the field input.
-        """
         self.coerce_thirds = kwargs.pop('coerce_thirds', True)
         self.limit_denominator = kwargs.pop('limit_denominator', None)
+        self.use_mixed_numbers = kwargs.pop('use_mixed_numbers', True)
         super(DecimalFractionField, self).__init__(*args, **kwargs)
 
     def prepare_value(self, value):
-        if isinstance(value, Decimal) or isinstance(value, float):
-            f = fractions.Fraction(value)
-            dec = Decimal(value).quantize(Decimal('0.00'))
+        try:
+            whole_number, numerator, denominator = get_fraction_parts(value,
+                                                                      self.use_mixed_numbers,
+                                                                      self.limit_denominator,
+                                                                      self.coerce_thirds)
 
-            if f.denominator == 1:
-                return str(f)
+            # if we are allowing mixed numbers (so non-fractional values,
+            # including whole numbers) and numerator is falsey (should be 0)
+            # just return the whole number.
+            if (whole_number or whole_number == 0) and not numerator \
+               and self.use_mixed_numbers:
+                return u'%s' % whole_number
 
-            fraction_string = ''
-            if f.numerator > f.denominator:
-            # convert to complex number
-                int_part = f.numerator // f.denominator
-                f = fractions.Fraction(f.numerator - (int_part * f.denominator), f.denominator)
-                fraction_string = u'%d' % int_part
+            if whole_number and self.use_mixed_numbers:
+                fraction_string = u'%d' % whole_number
+            else:
+                fraction_string = u''
 
-            if self.limit_denominator:
-                f = f.limit_denominator(self.limit_denominator)
+            fraction_string = u'%s %d/%d' % \
+                              (fraction_string, numerator, denominator)
 
-            if self.coerce_thirds:
-                temp_decimal = Decimal(f.numerator / f.denominator).quantize(Decimal('0.00'))
-                if temp_decimal % 1 == Decimal('.33') or temp_decimal % 1 == Decimal('.3') \
-                   or temp_decimal % 1 == Decimal('.67') or temp_decimal % 1 == Decimal('.6'):
-                    f = f.limit_denominator(3)
-
-            fraction_string = u'%s %d/%d' % (fraction_string, f.numerator, f.denominator)
-        else:
+        except (ValueError, InvalidOperation) as e:
             fraction_string = u'%s' % value
+
         return fraction_string.strip()
+
 
     def to_python(self, value):
         """
