@@ -39,7 +39,7 @@ In Forms::
     from djfractions.forms import DecimalFractionField
     from django import forms
 
-    class MyForm(froms.Form):
+    class MyForm(forms.Form):
         a_fraction = DecimalFractionField()
 
 
