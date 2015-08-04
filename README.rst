@@ -21,6 +21,9 @@ Quickstart
 Install django-fractions::
 
     pip install django-fractions
+    
+Add ``djfractions`` to ``settings.INSTALLED_APPS``
+    
 
 Then use it in a project::
 
