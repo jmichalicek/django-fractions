@@ -21,6 +21,9 @@ Quickstart
 Install django-fractions::
 
     pip install django-fractions
+    
+Add ``djfractions`` to ``settings.INSTALLED_APPS``
+    
 
 Then use it in a project::
 
@@ -36,7 +39,7 @@ In Forms::
     from djfractions.forms import DecimalFractionField
     from django import forms
 
-    class MyForm(froms.Form):
+    class MyForm(forms.Form):
         a_fraction = DecimalFractionField()
 
 
