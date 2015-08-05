@@ -53,9 +53,9 @@ class DisplayFractionTagTest(TestCase):
         {% display_fraction frac %}
         """)
 
-        self.template_limit_denominator = Template("""
+        self.all_params_template = Template("""
         {% load fractions %}
-        {% display_fraction frac 3 %}
+        {% display_fraction frac limit_denominator mixed_numbers coerce_thirds %}
         """)
 
 
@@ -79,10 +79,142 @@ class DisplayFractionTagTest(TestCase):
         rendered = self.template.render(c)
         self.assertEqual(rendered.strip(), '1 <sup>1</sup>&frasl;<sub>2</sub>')
 
-    def limit_denominator(self):
-        c = Context({'frac': 1/3.0})
-        rendered = self.template_limit_denominator.render(c)
-        self.assertEqual(rendered.strip(), '1 <sup>1</sup>&frasl;<sub>3</sub>')
+    def test_limit_denominator(self):
+        c = Context(
+            {'frac': 1/3.0,
+             'limit_denominator': 3,
+             'mixed_numbers': True,
+             'coerce_thirds': True
+         })
+        rendered = self.all_params_template.render(c)
+        self.assertEqual(rendered.strip(), '<sup>1</sup>&frasl;<sub>3</sub>')
+
+    def test_allow_mixed_numbers_with_improper_fraction(self):
+        c = Context(
+            {'frac': 1.5,
+             'limit_denominator': None,
+             'mixed_numbers': True,
+             'coerce_thirds': True
+         })
+        rendered = self.all_params_template.render(c)
+        self.assertEqual(rendered.strip(), '1 <sup>1</sup>&frasl;<sub>2</sub>')
+
+        c = Context(
+            {'frac': 1.5,
+             'limit_denominator': None,
+             'mixed_numbers': False,
+             'coerce_thirds': True
+         })
+        rendered = self.all_params_template.render(c)
+        self.assertEqual(rendered.strip(), '<sup>3</sup>&frasl;<sub>2</sub>')
+
+    def test_allow_mixed_numbers_with_whole_number_int(self):
+        c = Context(
+            {'frac': 4,
+             'limit_denominator': None,
+             'mixed_numbers': True,
+             'coerce_thirds': True
+        })
+        rendered = self.all_params_template.render(c)
+
+        self.assertEqual(rendered.strip(), '4')
+
+        c = Context(
+            {'frac': 4,
+             'limit_denominator': None,
+             'mixed_numbers': False,
+             'coerce_thirds': True
+         })
+        rendered = self.all_params_template.render(c)
+        self.assertEqual(rendered.strip(), '<sup>4</sup>&frasl;<sub>1</sub>')
+
+    def test_allow_mixed_numbers_with_whole_number_float(self):
+
+        c = Context(
+            {'frac': 4.0,
+             'limit_denominator': None,
+             'mixed_numbers': True,
+             'coerce_thirds': True
+         })
+        rendered = self.all_params_template.render(c)
+        self.assertEqual(rendered.strip(), '4')
+
+        c = Context(
+            {'frac': 4.0,
+             'limit_denominator': None,
+             'mixed_numbers': False,
+             'coerce_thirds': True
+         })
+        rendered = self.all_params_template.render(c)
+        self.assertEqual(rendered.strip(), '<sup>4</sup>&frasl;<sub>1</sub>')
+
+
+    def test_allow_mixed_numbers_with_whole_number_decimal(self):
+
+        c = Context(
+            {'frac': Decimal('4.0'),
+             'limit_denominator': None,
+             'mixed_numbers': True,
+             'coerce_thirds': True
+         })
+        rendered = self.all_params_template.render(c)
+        self.assertEqual(rendered.strip(), '4')
+
+        c = Context(
+            {'frac': Decimal('4.0'),
+             'limit_denominator': None,
+             'mixed_numbers': False,
+             'coerce_thirds': True
+         })
+        rendered = self.all_params_template.render(c)
+        self.assertEqual(rendered.strip(), '<sup>4</sup>&frasl;<sub>1</sub>')
+
+
+class DisplayImproperFractionTagTest(TestCase):
+    """
+    Test the display_improper_fraction template tag
+    """
+
+    def setUp(self):
+        self.template = Template("""
+        {% load fractions %}
+        {% display_improper_fraction frac %}
+        """)
+
+    def test_improper_fraction_float(self):
+        c = Context({'frac': 1.5})
+        rendered = self.template.render(c)
+        self.assertEqual(rendered.strip(), '<sup>3</sup>&frasl;<sub>2</sub>')
+
+    def test_improper_fraction_decimal(self):
+        c = Context({'frac': Decimal('1.5')})
+        rendered = self.template.render(c)
+        self.assertEqual(rendered.strip(), '<sup>3</sup>&frasl;<sub>2</sub>')
+
+    def test_whole_number_integer(self):
+        c = Context({'frac': 4})
+        rendered = self.template.render(c)
+        self.assertEqual(rendered.strip(), '<sup>4</sup>&frasl;<sub>1</sub>')
+
+    def test_whole_number_float(self):
+        c = Context({'frac': 4.0})
+        rendered = self.template.render(c)
+        self.assertEqual(rendered.strip(), '<sup>4</sup>&frasl;<sub>1</sub>')
+
+    def test_whole_number_decimal(self):
+        c = Context({'frac': Decimal('4')})
+        rendered = self.template.render(c)
+        self.assertEqual(rendered.strip(), '<sup>4</sup>&frasl;<sub>1</sub>')
+
+    def test_proper_fraction_float(self):
+        c = Context({'frac': .5})
+        rendered = self.template.render(c)
+        self.assertEqual(rendered.strip(), '<sup>1</sup>&frasl;<sub>2</sub>')
+
+    def test_proper_fraction_decimal(self):
+        c = Context({'frac': Decimal('.5')})
+        rendered = self.template.render(c)
+        self.assertEqual(rendered.strip(), '<sup>1</sup>&frasl;<sub>2</sub>')
 
 
 class DecimalFractionFieldTest(TestCase):
