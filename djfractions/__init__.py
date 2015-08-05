@@ -7,8 +7,14 @@ import fractions
 import re
 
 __all__ = [
-    'quantity_to_decimal',
+    'quantity_to_decimal', 'is_number', 'is_fraction',
+    'get_fraction_parts',
 ]
+
+HTML_ENTITIES = [
+    '&frac12', '&frac13', '&frac23', '&frac14', '&frac34', '&frac15',
+    '&frac25', '&frac35', '&frac45', '&frac16', '&frac56', '&frac17',
+    '&frac18', '&frac38', '&frac58', '&frac78',]
 
 
 def is_number(s):
@@ -106,11 +112,6 @@ def get_fraction_parts(value, allow_mixed_numbers=True,
     """
 
     f = fractions.Fraction(value)
-    #if f.denominator == 1:
-    #    if allow_mixed_numbers:
-    #        return (f.numerator, None, None)
-
-    #    eturn (None, f.numerator, f.denominator)
 
     whole_number = 0
     if allow_mixed_numbers and f.numerator >= f.denominator:
@@ -132,3 +133,16 @@ def get_fraction_parts(value, allow_mixed_numbers=True,
             f = f.limit_denominator(3)
 
     return (whole_number, f.numerator, f.denominator)
+
+def get_fraction_unicode_entity(value):
+    """
+    Returns the html unicode entity for the fraction if one exists or None
+
+    :param value:  The value to get the entity for.
+    """
+    if not isinstance(value, fractions.Fraction):
+        value = fraction.Fraction(value)
+        entity = u'&frac%d%d' % (value.numerator, value.denominator)
+        if entity not in HTML_ENTITIES:
+            return None
+        return entity
