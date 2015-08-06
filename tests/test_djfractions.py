@@ -170,6 +170,19 @@ class DisplayFractionTagTest(TestCase):
         rendered = self.all_params_template.render(c)
         self.assertEqual(rendered.strip(), '<sup>4</sup>&frasl;<sub>1</sub>')
 
+    def test_zero_allow_mixed_numbers(self):
+        c = Context({'frac': 0})
+        rendered = self.template.render(c)
+        self.assertEqual(rendered.strip(), '0')
+
+    def test_zero_no_mixed_numbers(self):
+        c = Context({'frac': 0,
+                     'limit_denominator': None,
+                     'mixed_numbers': False,
+                     'coerce_thirds': True})
+        rendered = self.all_params_template.render(c)
+        self.assertEqual(rendered.strip(), '<sup>0</sup>&frasl;<sub>1</sub>')
+
 
 class DisplayImproperFractionTagTest(TestCase):
     """

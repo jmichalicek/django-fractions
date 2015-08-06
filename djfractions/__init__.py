@@ -8,7 +8,7 @@ import re
 
 __all__ = [
     'quantity_to_decimal', 'is_number', 'is_fraction',
-    'get_fraction_parts',
+    'get_fraction_parts', 'get_fraction_unicode_entity',
 ]
 
 HTML_ENTITIES = [
