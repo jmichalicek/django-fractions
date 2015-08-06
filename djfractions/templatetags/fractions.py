@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, absolute_import, division
 
 from django import template
+from django.template import loader, Context
 from django.utils.safestring import mark_safe
 
 from decimal import Decimal, InvalidOperation
@@ -11,8 +12,9 @@ from .. import get_fraction_parts, get_fraction_unicode_entity
 register = template.Library()
 
 
+# use simple tag rather than inclusion_tag because it's way easier
+# to test the rendered string for correctness
 @register.simple_tag(name='display_fraction')
-#@register.inclusion_tag('djfractions/display_fraction.html', name='display_fraction')
 def display_fraction(value, limit_denominator=None, allow_mixed_numbers=True,
                      coerce_thirds=True):
     """
@@ -36,19 +38,7 @@ def display_fraction(value, limit_denominator=None, allow_mixed_numbers=True,
                                                                   limit_denominator,
                                                                   coerce_thirds)
         unicode_entity = get_fraction_unicode_entity(fractions.Fraction(numerator, denominator))
-#        if (whole_number or whole_number == 0) and not numerator \
-#           and allow_mixed_numbers:
-#            return u'%s' % whole_number
-
-#        if whole_number and allow_mixed_numbers:
-#            fraction_string = u'%d' % whole_number
-#        else:
-#            fraction_string = u''
-
-#        fraction_string = '%s <sup>%d</sup>&frasl;<sub>%d</sub>' % (fraction_string, numerator, denominator)
-
     except (ValueError, InvalidOperation) as e:
-        #fraction_string = u'%s' % value
         whole_number, numerator, denominator, unicode_entity = (value, 0, 0, None)
 
     from django.template import loader, Context
@@ -61,7 +51,6 @@ def display_fraction(value, limit_denominator=None, allow_mixed_numbers=True,
     })
     template = loader.get_template('djfractions/display_fraction.html')
     return mark_safe(template.render(c).strip())
-    #return mark_safe(fraction_string.strip())
 
 
 @register.simple_tag(name='display_improper_fraction')
