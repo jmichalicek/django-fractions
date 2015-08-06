@@ -55,9 +55,12 @@ TODO
 ____
 
 * Read The Docs documentation
-* Use unicode fractions instead of sub/sup when reasonable for output
-* Consider not using sub/sup at all as they can be problematic for screen readers based on a very old discussion of this subject
-* Possibly make the output of the template tags templated
+* Add unicode_fraction template tag to display the unicode fraction entity if available
+* forms.FloatDecimalField to return a float rather than Decimal
+* forms.SplitFractionWidget for having separate numerator and denominator form fields
+* forms.SplitMixedFractionWidget for handling mixed number fractions with separate fields
+* models.DecimalBackedFractionField() to store a Decimal value but return/accept it as a fraction
+* models.FloatBackedFractionField() to store a Decimal value but return/accept it as a fraction
 * Tags and filters to convert to Decimal and/or float
 
 
