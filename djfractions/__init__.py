@@ -12,9 +12,9 @@ __all__ = [
 ]
 
 HTML_ENTITIES = [
-    '&frac12', '&frac13', '&frac23', '&frac14', '&frac34', '&frac15',
-    '&frac25', '&frac35', '&frac45', '&frac16', '&frac56', '&frac17',
-    '&frac18', '&frac38', '&frac58', '&frac78',]
+    '&frac12;', '&frac13;', '&frac23;', '&frac14;', '&frac34;', '&frac15;',
+    '&frac25;', '&frac35;', '&frac45;', '&frac16;', '&frac56;', '&frac17;',
+    '&frac18;', '&frac38;', '&frac58;', '&frac78;',]
 
 
 def is_number(s):
@@ -141,8 +141,10 @@ def get_fraction_unicode_entity(value):
     :param value:  The value to get the entity for.
     """
     if not isinstance(value, fractions.Fraction):
-        value = fraction.Fraction(value)
-        entity = u'&frac%d%d' % (value.numerator, value.denominator)
-        if entity not in HTML_ENTITIES:
-            return None
-        return entity
+        value = fractions.Fraction(value)
+
+    entity = u'&frac%d%d;' % (value.numerator, value.denominator)
+
+    if entity not in HTML_ENTITIES:
+        return None
+    return entity

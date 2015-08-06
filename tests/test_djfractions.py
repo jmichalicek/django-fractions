@@ -4,8 +4,9 @@ from django.test import TestCase
 from django.template import Template, Context
 
 from decimal import Decimal
+import fractions
 
-from djfractions import quantity_to_decimal
+from djfractions import quantity_to_decimal, get_fraction_unicode_entity
 from djfractions.forms import DecimalFractionField
 
 
@@ -387,3 +388,118 @@ class DecimalFractionFieldTest(TestCase):
         field = DecimalFractionField()
         with self.assertRaises(ValidationError):
             field.validate(Decimal("-Inf"))
+
+class GetFractionUnicodeEntityTest(TestCase):
+
+    def test_one_half(self):
+        f = fractions.Fraction(1, 2)
+        entity = get_fraction_unicode_entity(f)
+        self.assertEqual('&frac12;', entity)
+
+        entity = get_fraction_unicode_entity(Decimal('.5'))
+        self.assertEqual('&frac12;', entity)
+
+    def test_one_third(self):
+        f = fractions.Fraction(1, 3)
+        entity = get_fraction_unicode_entity(f)
+        self.assertEqual('&frac13;', entity)
+
+    def test_two_thirds(self):
+        f = fractions.Fraction(2, 3)
+        entity = get_fraction_unicode_entity(f)
+        self.assertEqual('&frac23;', entity)
+
+    def test_one_fourth(self):
+        f = fractions.Fraction(1, 4)
+        entity = get_fraction_unicode_entity(f)
+        self.assertEqual('&frac14;', entity)
+
+        entity = get_fraction_unicode_entity(Decimal('.25'))
+        self.assertEqual('&frac14;', entity)
+
+    def test_three_fourths(self):
+        f = fractions.Fraction(3, 4)
+        entity = get_fraction_unicode_entity(f)
+        self.assertEqual('&frac34;', entity)
+
+        entity = get_fraction_unicode_entity(Decimal('.75'))
+        self.assertEqual('&frac34;', entity)
+
+    def test_one_fifth(self):
+        f = fractions.Fraction(1, 5)
+        entity = get_fraction_unicode_entity(f)
+        self.assertEqual('&frac15;', entity)
+
+        entity = get_fraction_unicode_entity(Decimal('.2'))
+        self.assertEqual('&frac15;', entity)
+
+    def test_two_fifths(self):
+        f = fractions.Fraction(2, 5)
+        entity = get_fraction_unicode_entity(f)
+        self.assertEqual('&frac25;', entity)
+
+        entity = get_fraction_unicode_entity(Decimal('.4'))
+        self.assertEqual('&frac25;', entity)
+
+    def test_three_fifths(self):
+        f = fractions.Fraction(3, 5)
+        entity = get_fraction_unicode_entity(f)
+        self.assertEqual('&frac35;', entity)
+
+        entity = get_fraction_unicode_entity(Decimal('.6'))
+        self.assertEqual('&frac35;', entity)
+
+    def test_four_fifths(self):
+        f = fractions.Fraction(4, 5)
+        entity = get_fraction_unicode_entity(f)
+        self.assertEqual('&frac45;', entity)
+
+        entity = get_fraction_unicode_entity(Decimal('.8'))
+        self.assertEqual('&frac45;', entity)
+
+    def test_one_sixth(self):
+        f = fractions.Fraction(1, 6)
+        entity = get_fraction_unicode_entity(f)
+        self.assertEqual('&frac16;', entity)
+
+    def test_five_sixths(self):
+        f = fractions.Fraction(5, 6)
+        entity = get_fraction_unicode_entity(f)
+        self.assertEqual('&frac56;', entity)
+
+    def test_one_seventh(self):
+        f = fractions.Fraction(1, 7)
+        entity = get_fraction_unicode_entity(f)
+        self.assertEqual('&frac17;', entity)
+
+    def test_one_eighth(self):
+        f = fractions.Fraction(1, 8)
+        entity = get_fraction_unicode_entity(f)
+        self.assertEqual('&frac18;', entity)
+
+        entity = get_fraction_unicode_entity(Decimal('.125'))
+        self.assertEqual('&frac18;', entity)
+
+    def test_three_eighths(self):
+        f = fractions.Fraction(3, 8)
+        entity = get_fraction_unicode_entity(f)
+        self.assertEqual('&frac38;', entity)
+
+        entity = get_fraction_unicode_entity(Decimal('.375'))
+        self.assertEqual('&frac38;', entity)
+
+    def test_five_eighths(self):
+        f = fractions.Fraction(5, 8)
+        entity = get_fraction_unicode_entity(f)
+        self.assertEqual('&frac58;', entity)
+
+        entity = get_fraction_unicode_entity(Decimal('.625'))
+        self.assertEqual('&frac58;', entity)
+
+    def test_seven_eighths(self):
+        f = fractions.Fraction(7, 8)
+        entity = get_fraction_unicode_entity(f)
+        self.assertEqual('&frac78;', entity)
+
+        entity = get_fraction_unicode_entity(Decimal('.875'))
+        self.assertEqual('&frac78;', entity)
