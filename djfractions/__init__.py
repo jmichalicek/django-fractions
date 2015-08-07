@@ -1,10 +1,11 @@
 from __future__ import unicode_literals, absolute_import, division
 
-__version__ = '0.1.0'
+__version__ = '0.2.0'
 
 from decimal import Decimal
 import fractions
 import re
+
 
 __all__ = [
     'quantity_to_decimal', 'is_number', 'is_fraction',
@@ -133,6 +134,7 @@ def get_fraction_parts(value, allow_mixed_numbers=True,
             f = f.limit_denominator(3)
 
     return (whole_number, f.numerator, f.denominator)
+
 
 def get_fraction_unicode_entity(value):
     """
