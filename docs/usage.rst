@@ -48,7 +48,7 @@ and the styling is frequently difficult to match up exactly with <sup> and <sub>
 
 Would output::
 
-    1 <sup>1></sup>&frasl;<sub>1</sub>
+    1 <sup>1</sup>&frasl;<sub>2</sub>
 
 
 The template context:
