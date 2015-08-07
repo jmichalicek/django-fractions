@@ -1,20 +1,17 @@
 from __future__ import unicode_literals, absolute_import, division
 
 from django import template
-from django.template import loader, Context
-from django.utils.safestring import mark_safe
 
 from decimal import Decimal, InvalidOperation
 import fractions
 
 from .. import get_fraction_parts, get_fraction_unicode_entity
 
+
 register = template.Library()
 
 
-# use simple tag rather than inclusion_tag because it's way easier
-# to test the rendered string for correctness
-@register.simple_tag(name='display_fraction')
+@register.inclusion_tag('djfractions/display_fraction.html', name='display_fraction')
 def display_fraction(value, limit_denominator=None, allow_mixed_numbers=True,
                      coerce_thirds=True):
     """
@@ -41,19 +38,16 @@ def display_fraction(value, limit_denominator=None, allow_mixed_numbers=True,
     except (ValueError, InvalidOperation) as e:
         whole_number, numerator, denominator, unicode_entity = (value, 0, 0, None)
 
-    from django.template import loader, Context
-    c = Context({
+    return {
         'whole_number': whole_number,
         'numerator': numerator,
         'denominator': denominator,
         'unicode_entity': unicode_entity,
         'allow_mixed_numbers': allow_mixed_numbers,
-    })
-    template = loader.get_template('djfractions/display_fraction.html')
-    return mark_safe(template.render(c).strip())
+    }
 
 
-@register.simple_tag(name='display_improper_fraction')
+@register.inclusion_tag('djfractions/display_fraction.html', name='display_improper_fraction')
 def display_improper_fraction(value, limit_denominator=None, coerce_thirds=True):
     """
     Display a numeric value as an html fraction using
