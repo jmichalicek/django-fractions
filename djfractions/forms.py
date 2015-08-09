@@ -12,10 +12,10 @@ import re
 from . import quantity_to_decimal, is_number, get_fraction_parts
 
 
-class DecimalFractionField(forms.Field):
+class FractionField(forms.Field):
     """
     Displays and takes input as a fraction string such as 1/4 or 1 1/4
-    but stores as a Decimal.
+    but returns a :class:`fractions.Fraction`.
 
     fraction = DecimalFractionField(coerce_thirds=True, limit_denominator=None,
                                     use_mixed_numbers=True)
@@ -39,7 +39,7 @@ class DecimalFractionField(forms.Field):
         self.coerce_thirds = kwargs.pop('coerce_thirds', True)
         self.limit_denominator = kwargs.pop('limit_denominator', None)
         self.use_mixed_numbers = kwargs.pop('use_mixed_numbers', True)
-        super(DecimalFractionField, self).__init__(*args, **kwargs)
+        super(FractionField, self).__init__(*args, **kwargs)
 
     def prepare_value(self, value):
         try:
@@ -68,6 +68,25 @@ class DecimalFractionField(forms.Field):
 
         return fraction_string.strip()
 
+
+class DecimalFractionField(FractionField):
+    """
+    Displays and takes input as a fraction string such as 1/4 or 1 1/4
+    but returns a :class:`decimal.Decimal`.
+
+    fraction = DecimalFractionField(coerce_thirds=True, limit_denominator=None,
+                                    use_mixed_numbers=True)
+
+    :ivar bool coerce_thirds: Defaults to True.  If True
+        then .3 repeating is forced to 1/3 rather than 3/10, 33/100, etc.
+        and .66 and .67 are forced to 2/3.
+    :ivar int limit_denominator: Set a maximum denominator to be used on
+        fractions created from the field input.
+    :ivar bool use_mixed_numbers: If True initial values which are
+        decimals and floats greater than 1 will be converted to a mixed
+        number such as `1 1/2` in the form field's value.  If False then
+        improper fractions such as `3/2` will be created. Defaults to True.
+    """
 
     def to_python(self, value):
         """
