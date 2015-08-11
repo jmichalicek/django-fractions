@@ -7,9 +7,10 @@ from django.utils.translation import ugettext_lazy as _, ungettext_lazy
 
 from decimal import Decimal, InvalidOperation
 import fractions
+import numbers
 import re
 
-from . import quantity_to_decimal, is_number, get_fraction_parts
+from . import quantity_to_decimal, is_number, get_fraction_parts, coerce_to_thirds
 
 
 class FractionField(forms.Field):
@@ -68,6 +69,44 @@ class FractionField(forms.Field):
 
         return fraction_string.strip()
 
+    def to_python(self, value):
+        """
+        Take string input such as 1/4 or 1 1/3 and convert to a :class:`fractions.Fraction`.
+        This will also work with int, float, Decimal, and Fraction.
+        """
+        if value in EMPTY_VALUES:
+            return None
+
+        if isinstance(value, numbers.Number):
+            fraction = fractions.Fraction(value)
+
+        else:
+            # some really lame validation that we do not have a string like "1 1 1/4" because that
+            # is not a valid number.
+            # these regexes should match fractions such as 1 1/4 and 1/4, with any number
+            # of spaces between digits and / and any length of actual digits such as
+            # 100 1/4 or 1 100/400, etc
+            if not is_number(value) and not re.match(r'^\s*\d+\s*\/\s*\d+\s*$', value) \
+               and not re.match(r'^\s*\d+(\s+|\s+and\s+|\s*\-\s*)\d+\s*\/\s*\d+$\s*', value):
+                # this second matches optional whitespace, then a digit, then
+                # whitespace OR the word 'and' with or without spaces OR a hyphen with
+                # or without surrounding spaces, followed by another digit, a /, then a digit
+                # examples: 1 1/2, 1-1/2, 1 - 1/2, 1 and 1/2, etc.
+                raise ValidationError(self.error_messages['invalid'], code='invalid')
+
+            #        try:
+            fraction = quantity_to_fraction(value)
+            #except DecimalException:
+            #    raise ValidationError(self.error_messages['invalid'], code='invalid')
+
+        if self.limit_denominator:
+            fraction = fraction.limit_denominator(self.limit_denominator)
+
+        if self.coerce_thirds and not self.limit_denominator or self.limit_denominator > 3:
+            fraction = fraction.limit_denominator(3)
+
+        return fraction
+
 
 class DecimalFractionField(FractionField):
     """
@@ -95,7 +134,11 @@ class DecimalFractionField(FractionField):
         if value in EMPTY_VALUES:
             return None
 
-        if isinstance(value, Decimal) or isinstance(value, float) or isinstance(value, int):
+        #if isinstance(value, Decimal) or isinstance(value, float) or isinstance(value, int):
+        if isinstance(value, fractions.Fraction):
+            return Decimal(value.numerator / value.denominator)
+
+        if isinstance(value, numbers.Number):
             return Decimal(value)
 
         # some really lame validation that we do not have a string like "1 1 1/4" because that

@@ -3,6 +3,14 @@
 History
 -------
 
+master
+++++++
+
+* Added forms.FractionField which returns fractions.Fraction instances
+* Refactoring of common code with new forms.FractionField
+* Smarter checking for numeric types throughout the code
+* forms.DecimalFractionField.to_python() handles fractions.Fraction values now
+
 0.2.1 (2015-08-06)
 ++++++++++++++++++
 

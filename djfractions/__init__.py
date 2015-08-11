@@ -4,6 +4,7 @@ __version__ = '0.2.1'
 
 from decimal import Decimal
 import fractions
+import numbers
 import re
 
 
@@ -50,6 +51,19 @@ def is_fraction(s):
     return bool(re.match(r'^\d+/\d+$', s))
 
 
+def coerce_to_thirds(value):
+    """
+    takes a :class:`fractions.Fraction` and forces it to thirds if it is one that
+    is frequently the result of taking a number such as 1/3, converting to decimal/float,
+    then back to a fraction.
+    """
+    temp_decimal = Decimal(value.numerator / value.denominator).quantize(Decimal('0.00'))
+    if temp_decimal % 1 == Decimal('.33') or temp_decimal % 1 == Decimal('.3') \
+       or temp_decimal % 1 == Decimal('.67') or temp_decimal % 1 == Decimal('.6'):
+        value = value.limit_denominator(3)
+    return value
+
+
 def quantity_to_decimal(quantity_string):
     """
     Take a quantity string and return a decimal.
@@ -58,6 +72,9 @@ def quantity_to_decimal(quantity_string):
 
     :param quantity_string: String to convert to a :class:`decimal.Decimal`
     """
+
+    # get actual fraction-like strings to be N/N with no spaces
+    quantity_string = re.sub(r'\s*/\s*', '/', quantity_string)
 
     if is_number(quantity_string):
         return Decimal(quantity_string)
@@ -80,6 +97,38 @@ def quantity_to_decimal(quantity_string):
 
     return Decimal(sum(number_stack))
 
+
+def quantity_to_fraction(quantity_string):
+    """
+    Take a quantity string and return a :class:`fractions.Fraction`.
+    Handles one hundred, two hundred, three hundred twenty five,
+    1, 1 1/4, 1 and 1/4, 1.25, .25
+
+    :param quantity_string: String to convert to a :class:`fractions.Fraction`
+    """
+    # get actual fraction-like strings to be N/N with no spaces
+    quantity_string = re.sub(r'\s*/\s*', '/', quantity_string)
+    if is_number(quantity_string):
+        return fractions.Fraction(quantity_string)
+
+    if is_fraction(quantity_string):
+        return _fraction_string_to_fraction(quantity_string)
+
+    # it must be a something like 1 1/4
+    parts = re.match(r'(\d+)\s+(\d+)\/(\d+)', quantity_string.strip())
+    # parts.group(0) is the entire string, 1 is the whole number bit
+    f = fractions.Fraction(parts.group(2), parts.group(3))
+    f = f + int(parts.group(1))
+    return f
+
+def _fraction_string_to_fraction(fraction):
+    """
+    Convert a string representing a fraction to a :class:`fractions.Fraction`
+    """
+    parts = fraction.split('/')
+    numerator = int(parts[0])
+    denominator = int(parts[1])
+    return fractions.Fraction(numerator, denominator)
 
 def _fraction_string_to_decimal(fraction):
     """
@@ -128,11 +177,7 @@ def get_fraction_parts(value, allow_mixed_numbers=True,
     if coerce_thirds and not (limit_denominator and limit_denominator <= 3):
         # if denominator is limited to less than 3, this would be in opposition to that.
         # if denominator is limited to 3 then this has naturally already been done.
-        temp_decimal = Decimal(f.numerator / f.denominator).quantize(Decimal('0.00'))
-        if temp_decimal % 1 == Decimal('.33') or temp_decimal % 1 == Decimal('.3') \
-           or temp_decimal % 1 == Decimal('.67') or temp_decimal % 1 == Decimal('.6'):
-            f = f.limit_denominator(3)
-
+        f = coerce_to_thirds(f)
     return (whole_number, f.numerator, f.denominator)
 
 

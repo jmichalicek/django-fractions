@@ -6,7 +6,7 @@ from django.template import Template, Context
 from decimal import Decimal
 import fractions
 
-from djfractions import quantity_to_decimal, get_fraction_unicode_entity
+from djfractions import quantity_to_decimal, get_fraction_unicode_entity, quantity_to_fraction
 from djfractions.forms import DecimalFractionField
 
 
@@ -42,6 +42,10 @@ class QuantityToDecimalTest(TestCase):
         self.assertEqual(Decimal('1.25'), quantity_to_decimal('1 and 1/4'))
         self.assertEqual(Decimal('1.25'), quantity_to_decimal('1-1/4'))
 
+
+class QuantityToFractionTest(TestCase):
+    def test_single_integer(self):
+        self.assertEqual(fractions.Fraction(1, 1), quantity_to_fraction('1'))
 
 class DisplayFractionTagTest(TestCase):
     """
