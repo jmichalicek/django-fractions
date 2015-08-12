@@ -10,7 +10,7 @@ master
 * Refactoring of common code with new forms.FractionField
 * Smarter checking for numeric types throughout the code
 * forms.DecimalFractionField.to_python() handles fractions.Fraction values now
-* Fixed bug handling negative numbers in quantity_to_string()
+* Fixed bug handling negative numbers in quantity_to_decimal()
 
 0.2.1 (2015-08-06)
 ++++++++++++++++++
