@@ -66,8 +66,10 @@ def coerce_to_thirds(value):
 def quantity_to_decimal(quantity_string):
     """
     Take a quantity string and return a decimal.
+
     Handles one hundred, two hundred, three hundred twenty five,
-    1, 1 1/4, 1 and 1/4, 1.25, .25
+    1, 1 1/4, 1 and 1/4, 1.25, .25.  Negative values should have
+    the negative sign first, such as -1/4 or -1 1/4
 
     :param quantity_string: String to convert to a :class:`decimal.Decimal`
     """
@@ -81,6 +83,10 @@ def quantity_to_decimal(quantity_string):
     if is_fraction(quantity_string):
         return _fraction_string_to_decimal(quantity_string)
 
+    # assume the a hyphen between a whole value and fraction such as 1-1/4
+    # is a separator and not a negative fraction.
+    # If the negative is first though, then we need to keep it negative.
+    positive_or_negative = -1 if quantity_string.strip().startswith('-') else 1
     quantity_string = quantity_string.replace('-', ' ')
 
     parts = quantity_string.split()
@@ -94,14 +100,16 @@ def quantity_to_decimal(quantity_string):
         elif is_number(part):
             number_stack.append(Decimal(part))
 
-    return Decimal(sum(number_stack))
+    return Decimal(sum(number_stack)) * positive_or_negative
 
 
 def quantity_to_fraction(quantity_string):
     """
     Take a quantity string and return a :class:`fractions.Fraction`.
+
     Handles one hundred, two hundred, three hundred twenty five,
-    1, 1 1/4, 1 and 1/4, 1.25, .25
+    1, 1 1/4, 1 and 1/4, 1-1/4, 1.25, .25. Negative values should have
+    the negative sign first, such as -1/4 or -1 1/4
 
     :param quantity_string: String to convert to a :class:`fractions.Fraction`
     """
@@ -114,10 +122,20 @@ def quantity_to_fraction(quantity_string):
         return _fraction_string_to_fraction(quantity_string)
 
     # it must be a something like 1 1/4
-    parts = re.match(r'(\d+)\s+(\d+)\/(\d+)', quantity_string.strip())
+    # assume the a hyphen between a whole value and fraction such as 1-1/4
+    # is a separator and not a negative fraction.
+    # If the negative is first though, then we need to keep it negative.
+    # Cannot just keep the fraction on the int or we end up subtraction.
+    # -1 1/4 becomes -3/4 when what is meant is -5/4
+    positive_or_negative = -1 if quantity_string.strip().startswith('-') else 1
+
+    # non-capturing group in the middle handls just a space, hyphen with
+    # optional spaces, or the word and.  Examples:
+    # 1 1/4, 1-1/4, 1 - 1/4, 1 and 1/4
+    parts = re.match(r'^-?(\d+)(?:\s+|\s*-?\s*|\s+and\s+)(\d+\/\d+)', quantity_string.strip())
     # parts.group(0) is the entire string, 1 is the whole number bit
-    f = fractions.Fraction(parts.group(2), parts.group(3))
-    f = f + int(parts.group(1))
+    f = fractions.Fraction(parts.group(2))
+    f = (f + int(parts.group(1))) * positive_or_negative
     return f
 
 def _fraction_string_to_fraction(fraction):

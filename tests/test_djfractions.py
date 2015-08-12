@@ -35,17 +35,46 @@ class QuantityToDecimalTest(TestCase):
         self.assertEqual(Decimal('.67'),
                          quantity_to_decimal('2/3').quantize(Decimal('0.00')))
 
-    def test_complex_number(self):
+    def test_mixed_number(self):
         self.assertEqual(Decimal('1.25'), quantity_to_decimal('1 1/4'))
         self.assertEqual(Decimal('1.33'),
                          quantity_to_decimal('1 1/3').quantize(Decimal('0.01')))
         self.assertEqual(Decimal('1.25'), quantity_to_decimal('1 and 1/4'))
         self.assertEqual(Decimal('1.25'), quantity_to_decimal('1-1/4'))
 
+    def test_mixed_number(self):
+        self.assertEqual(Decimal('-1.25'), quantity_to_decimal('-1 1/4'))
+        self.assertEqual(Decimal('-1.33'),
+                         quantity_to_decimal('-1 1/3').quantize(Decimal('0.01')))
+        self.assertEqual(Decimal('-1.25'), quantity_to_decimal('-1 and 1/4'))
+        self.assertEqual(Decimal('-1.25'), quantity_to_decimal('-1-1/4'))
+
+
 
 class QuantityToFractionTest(TestCase):
     def test_single_integer(self):
         self.assertEqual(fractions.Fraction(1, 1), quantity_to_fraction('1'))
+        self.assertEqual(fractions.Fraction(2, 1), quantity_to_fraction('2'))
+
+    def test_simple_decimal(self):
+        self.assertEqual(fractions.Fraction(1, 4), quantity_to_fraction('.25'))
+        self.assertEqual(fractions.Fraction(5, 4), quantity_to_fraction('1.25'))
+
+    def test_simple_fraction(self):
+        self.assertEqual(fractions.Fraction(1, 4), quantity_to_fraction('1/4'))
+        self.assertEqual(fractions.Fraction(1, 3), quantity_to_fraction('1/3'))
+        self.assertEqual(fractions.Fraction(3, 2), quantity_to_fraction('3/2'))
+
+    def test_mixed_number(self):
+        self.assertEqual(fractions.Fraction(5, 4), quantity_to_fraction('1 1/4'))
+        self.assertEqual(fractions.Fraction(5, 4), quantity_to_fraction('1 and 1/4'))
+        self.assertEqual(fractions.Fraction(5, 4), quantity_to_fraction('1-1/4'))
+
+    def test_negative_numbers(self):
+        self.assertEqual(fractions.Fraction(-5, 4), quantity_to_fraction('-1 1/4'))
+        self.assertEqual(fractions.Fraction(-5, 4), quantity_to_fraction('-1-1/4'))
+        self.assertEqual(fractions.Fraction(-5, 4), quantity_to_fraction('-1 - 1/4'))
+        self.assertEqual(fractions.Fraction(-5, 4), quantity_to_fraction('-1 and 1/4'))
 
 class DisplayFractionTagTest(TestCase):
     """
