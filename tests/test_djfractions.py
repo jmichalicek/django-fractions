@@ -50,7 +50,6 @@ class QuantityToDecimalTest(TestCase):
         self.assertEqual(Decimal('-1.25'), quantity_to_decimal('-1-1/4'))
 
 
-
 class QuantityToFractionTest(TestCase):
     def test_single_integer(self):
         self.assertEqual(fractions.Fraction(1, 1), quantity_to_fraction('1'))
@@ -75,6 +74,7 @@ class QuantityToFractionTest(TestCase):
         self.assertEqual(fractions.Fraction(-5, 4), quantity_to_fraction('-1-1/4'))
         self.assertEqual(fractions.Fraction(-5, 4), quantity_to_fraction('-1 - 1/4'))
         self.assertEqual(fractions.Fraction(-5, 4), quantity_to_fraction('-1 and 1/4'))
+
 
 class DisplayFractionTagTest(TestCase):
     """
