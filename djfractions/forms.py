@@ -3,6 +3,7 @@ from __future__ import unicode_literals, absolute_import, division
 from django import forms
 from django.core.exceptions import ValidationError
 from django.core.validators import EMPTY_VALUES
+from django.utils import six
 from django.utils.translation import ugettext_lazy as _, ungettext_lazy
 
 from decimal import Decimal, InvalidOperation
@@ -35,6 +36,12 @@ class FractionField(forms.Field):
     default_error_messages = {
         'invalid': _('Enter a fraction such as 1 1/4 or 1/4.'),
     }
+
+    # matches standard 'x/y' fractions with 0 or more spaces before, after, or between characters.
+    FRACTION_MATCH = re.compile(r'^\s*\d+\s*\/\s*\d+\s*$')
+    # matches mixed numbers such as '1 1/2' with any number of spaces and with common
+    # separators of - (hyphen) and the word 'and' between the whole number and fraction part
+    MIXED_NUMBER_MATCH = re.compile(r'^\s*\d+(\s+|\s+and\s+|\s*\-\s*)\d+\s*\/\s*\d+\s*$')
 
     def __init__(self, *args, **kwargs):
         self.coerce_thirds = kwargs.pop('coerce_thirds', True)
@@ -77,33 +84,32 @@ class FractionField(forms.Field):
         if value in EMPTY_VALUES:
             return None
 
-        if isinstance(value, numbers.Number):
-            fraction = fractions.Fraction(value)
-
-        else:
+        if isinstance(value, six.string_types):
             # some really lame validation that we do not have a string like "1 1 1/4" because that
             # is not a valid number.
             # these regexes should match fractions such as 1 1/4 and 1/4, with any number
             # of spaces between digits and / and any length of actual digits such as
             # 100 1/4 or 1 100/400, etc
-            if not is_number(value) and not re.match(r'^\s*\d+\s*\/\s*\d+\s*$', value) \
-               and not re.match(r'^\s*\d+(\s+|\s+and\s+|\s*\-\s*)\d+\s*\/\s*\d+$\s*', value):
+            if not is_number(value) and not self.FRACTION_MATCH.match(value) \
+               and not self.MIXED_NUMBER_MATCH.match(value):
                 # this second matches optional whitespace, then a digit, then
                 # whitespace OR the word 'and' with or without spaces OR a hyphen with
                 # or without surrounding spaces, followed by another digit, a /, then a digit
                 # examples: 1 1/2, 1-1/2, 1 - 1/2, 1 and 1/2, etc.
                 raise ValidationError(self.error_messages['invalid'], code='invalid')
 
-            #        try:
             fraction = quantity_to_fraction(value)
-            #except DecimalException:
-            #    raise ValidationError(self.error_messages['invalid'], code='invalid')
+        else:
+            # it's not a string, so try to convert it to a Fraction
+            # may need to catch some exceptions here and raise a ValidationError
+            fraction = fractions.Fraction(value)
 
         if self.limit_denominator:
             fraction = fraction.limit_denominator(self.limit_denominator)
 
         if self.coerce_thirds and not self.limit_denominator or self.limit_denominator > 3:
-            fraction = fraction.limit_denominator(3)
+            #fraction = fraction.limit_denominator(3)
+            fraction = coerce_to_thirds(fraction)
 
         return fraction
 
@@ -134,30 +140,29 @@ class DecimalFractionField(FractionField):
         if value in EMPTY_VALUES:
             return None
 
-        #if isinstance(value, Decimal) or isinstance(value, float) or isinstance(value, int):
         if isinstance(value, fractions.Fraction):
             return Decimal(value.numerator / value.denominator)
-
-        if isinstance(value, numbers.Number):
-            return Decimal(value)
 
         # some really lame validation that we do not have a string like "1 1 1/4" because that
         # is not a valid number.
         # these regexes should match fractions such as 1 1/4 and 1/4, with any number
         # of spaces between digits and / and any length of actual digits such as
         # 100 1/4 or 1 100/400, etc
-        if not is_number(value) and not re.match(r'^\s*\d+\s*\/\s*\d+\s*$', value) \
-           and not re.match(r'^\s*\d+(\s+|\s+and\s+|\s*\-\s*)\d+\s*\/\s*\d+$\s*', value):
-            # this second matches optional whitespace, then a digit, then
-            # whitespace OR the word 'and' with or without spaces OR a hyphen with
-            # or without surrounding spaces, followed by another digit, a /, then a digit
-            # examples: 1 1/2, 1-1/2, 1 - 1/2, 1 and 1/2, etc.
-            raise ValidationError(self.error_messages['invalid'], code='invalid')
+        if isinstance(value, six.string_types):
+            if not is_number(value) and not self.FRACTION_MATCH.match(value) \
+               and not self.MIXED_NUMBER_MATCH.match(value):
+                # this second matches optional whitespace, then a digit, then
+                # whitespace OR the word 'and' with or without spaces OR a hyphen with
+                # or without surrounding spaces, followed by another digit, a /, then a digit
+                # examples: 1 1/2, 1-1/2, 1 - 1/2, 1 and 1/2, etc.
+                raise ValidationError(self.error_messages['invalid'], code='invalid')
 
-        try:
-            value = quantity_to_decimal(value)
-        except DecimalException:
-            raise ValidationError(self.error_messages['invalid'], code='invalid')
+            try:
+                value = quantity_to_decimal(value)
+            except DecimalException:
+                raise ValidationError(self.error_messages['invalid'], code='invalid')
+        else:
+            value = Decimal(value)
         return value
 
     def validate(self, value):
