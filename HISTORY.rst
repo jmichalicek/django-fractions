@@ -11,6 +11,9 @@ master
 * Smarter checking for numeric types throughout the code
 * forms.DecimalFractionField.to_python() handles fractions.Fraction values now
 * Fixed bug handling negative numbers in quantity_to_decimal()
+* Added min_value and max_value to forms.DecimalFractionField
+* Made coerce_thirds, limit_denominator, and use_mixed_numbers params to DecimalFractionField
+  proper named parameters and not just kwargs.
 
 0.2.1 (2015-08-06)
 ++++++++++++++++++

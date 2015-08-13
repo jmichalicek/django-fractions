@@ -613,7 +613,6 @@ class FractionFieldTest(TestCase):
         Test that when coerce_thirds is specified, then .66, .67, and .33, etc.
         are converted properly to 1/3 and 2/3
         """
-        # MIGHT NOT NEED THIS TEST
         field = FractionField(coerce_thirds=True)
         result = field.prepare_value(Decimal(1/3.0))
         self.assertEqual('1/3', result)
@@ -688,27 +687,23 @@ class FractionFieldTest(TestCase):
         field = FractionField()
         value = '1 1/2'
         result = field.to_python(value)
-        self.assertEqual(Decimal(3/2.0).quantize(Decimal('0.000')),
-                         result.quantize(Decimal('0.000')))
+        self.assertEqual(fractions.Fraction('3/2'), result)
 
     def test_to_python_hyphenated_mixed_fraction_string(self):
-        field = FactionField()
+        field = FractionField()
         value = '1-1/2'
         result = field.to_python(value)
-        self.assertEqual(Decimal(3/2.0).quantize(Decimal('0.000')),
-                         result.quantize(Decimal('0.000')))
+        self.assertEqual(fractions.Fraction('3/2'), result)
 
         value = '1 - 1/2'
         result = field.to_python(value)
-        self.assertEqual(Decimal(3/2.0).quantize(Decimal('0.000')),
-                         result.quantize(Decimal('0.000')))
+        self.assertEqual(fractions.Fraction('3/2'), result)
 
     def test_to_python_anded_mixed_fraction_string(self):
         field = FractionField()
         value = '1 and 1/2'
         result = field.to_python(value)
-        self.assertEqual(Decimal(3/2.0).quantize(Decimal('0.000')),
-                         result.quantize(Decimal('0.000')))
+        self.assertEqual(fractions.Fraction('3/2'), result)
 
     def test_to_python_validation_errors(self):
         field = FractionField()
@@ -721,12 +716,12 @@ class FractionFieldTest(TestCase):
         with self.assertRaises(ValidationError):
             field.to_python('1 1')
 
-    def test_validate_inf_raises_error(self):
-        field = FractionField()
+    def test_max_value_set(self):
+        field = FractionField(max_value=fractions.Fraction('999/1000'))
         with self.assertRaises(ValidationError):
-            field.validate(Decimal("Inf"))
+            field.run_validators(fractions.Fraction(1, 1))
 
-    def test_validate_negative_inf_raises_error(self):
-        field = FractionField()
+    def test_min_value_set(self):
+        field = FractionField(min_value=1)
         with self.assertRaises(ValidationError):
-            field.validate(Decimal("-Inf"))
+            field.run_validators(fractions.Fraction(999, 1000))

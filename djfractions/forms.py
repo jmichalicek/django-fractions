@@ -2,7 +2,7 @@ from __future__ import unicode_literals, absolute_import, division
 
 from django import forms
 from django.core.exceptions import ValidationError
-from django.core.validators import EMPTY_VALUES
+from django.core import validators
 from django.utils import six
 from django.utils.translation import ugettext_lazy as _, ungettext_lazy
 
@@ -11,7 +11,8 @@ import fractions
 import numbers
 import re
 
-from . import quantity_to_decimal, is_number, get_fraction_parts, coerce_to_thirds
+from . import (quantity_to_decimal, is_number, get_fraction_parts,
+               coerce_to_thirds, quantity_to_fraction)
 
 
 class FractionField(forms.Field):
@@ -43,11 +44,18 @@ class FractionField(forms.Field):
     # separators of - (hyphen) and the word 'and' between the whole number and fraction part
     MIXED_NUMBER_MATCH = re.compile(r'^\s*\d+(\s+|\s+and\s+|\s*\-\s*)\d+\s*\/\s*\d+\s*$')
 
-    def __init__(self, *args, **kwargs):
-        self.coerce_thirds = kwargs.pop('coerce_thirds', True)
-        self.limit_denominator = kwargs.pop('limit_denominator', None)
-        self.use_mixed_numbers = kwargs.pop('use_mixed_numbers', True)
+    def __init__(self, max_value=None, min_value=None, limit_denominator=None,
+                 coerce_thirds=True, use_mixed_numbers=True, *args, **kwargs):
+        self.coerce_thirds = coerce_thirds
+        self.limit_denominator = limit_denominator
+        self.use_mixed_numbers = use_mixed_numbers
+        self.max_value, self.min_value = max_value, min_value
+
         super(FractionField, self).__init__(*args, **kwargs)
+        if max_value is not None:
+            self.validators.append(validators.MaxValueValidator(max_value))
+        if min_value is not None:
+            self.validators.append(validators.MinValueValidator(min_value))
 
     def prepare_value(self, value):
         try:
@@ -81,7 +89,7 @@ class FractionField(forms.Field):
         Take string input such as 1/4 or 1 1/3 and convert to a :class:`fractions.Fraction`.
         This will also work with int, float, Decimal, and Fraction.
         """
-        if value in EMPTY_VALUES:
+        if value in validators.EMPTY_VALUES:
             return None
 
         if isinstance(value, six.string_types):
@@ -108,7 +116,6 @@ class FractionField(forms.Field):
             fraction = fraction.limit_denominator(self.limit_denominator)
 
         if self.coerce_thirds and not self.limit_denominator or self.limit_denominator > 3:
-            #fraction = fraction.limit_denominator(3)
             fraction = coerce_to_thirds(fraction)
 
         return fraction
@@ -137,7 +144,7 @@ class DecimalFractionField(FractionField):
         """
         Take string input such as 1/4 or 1 1/3 and convert to a :class:`decimal.Decimal`
         """
-        if value in EMPTY_VALUES:
+        if value in validators.EMPTY_VALUES:
             return None
 
         if isinstance(value, fractions.Fraction):
@@ -174,9 +181,5 @@ class DecimalFractionField(FractionField):
         # isn't equal to itself, so we can use this to identify NaN
         if value != value or value == Decimal("Inf") or value == Decimal("-Inf"):
             raise ValidationError(self.error_messages['invalid'], code='invalid')
-        sign, digittuple, exponent = value.as_tuple()
-        decimals = abs(exponent)
-        # digittuple doesn't include any leading zeros.
-        digits = len(digittuple)
 
         return value
