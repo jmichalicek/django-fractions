@@ -6,8 +6,8 @@ from django.template import Template, Context
 from decimal import Decimal
 import fractions
 
-from djfractions import quantity_to_decimal, get_fraction_unicode_entity
-from djfractions.forms import DecimalFractionField
+from djfractions import quantity_to_decimal, get_fraction_unicode_entity, quantity_to_fraction
+from djfractions.forms import DecimalFractionField, FractionField
 
 
 class QuantityToDecimalTest(TestCase):
@@ -35,12 +35,45 @@ class QuantityToDecimalTest(TestCase):
         self.assertEqual(Decimal('.67'),
                          quantity_to_decimal('2/3').quantize(Decimal('0.00')))
 
-    def test_complex_number(self):
+    def test_mixed_number(self):
         self.assertEqual(Decimal('1.25'), quantity_to_decimal('1 1/4'))
         self.assertEqual(Decimal('1.33'),
                          quantity_to_decimal('1 1/3').quantize(Decimal('0.01')))
         self.assertEqual(Decimal('1.25'), quantity_to_decimal('1 and 1/4'))
         self.assertEqual(Decimal('1.25'), quantity_to_decimal('1-1/4'))
+
+    def test_mixed_number(self):
+        self.assertEqual(Decimal('-1.25'), quantity_to_decimal('-1 1/4'))
+        self.assertEqual(Decimal('-1.33'),
+                         quantity_to_decimal('-1 1/3').quantize(Decimal('0.01')))
+        self.assertEqual(Decimal('-1.25'), quantity_to_decimal('-1 and 1/4'))
+        self.assertEqual(Decimal('-1.25'), quantity_to_decimal('-1-1/4'))
+
+
+class QuantityToFractionTest(TestCase):
+    def test_single_integer(self):
+        self.assertEqual(fractions.Fraction(1, 1), quantity_to_fraction('1'))
+        self.assertEqual(fractions.Fraction(2, 1), quantity_to_fraction('2'))
+
+    def test_simple_decimal(self):
+        self.assertEqual(fractions.Fraction(1, 4), quantity_to_fraction('.25'))
+        self.assertEqual(fractions.Fraction(5, 4), quantity_to_fraction('1.25'))
+
+    def test_simple_fraction(self):
+        self.assertEqual(fractions.Fraction(1, 4), quantity_to_fraction('1/4'))
+        self.assertEqual(fractions.Fraction(1, 3), quantity_to_fraction('1/3'))
+        self.assertEqual(fractions.Fraction(3, 2), quantity_to_fraction('3/2'))
+
+    def test_mixed_number(self):
+        self.assertEqual(fractions.Fraction(5, 4), quantity_to_fraction('1 1/4'))
+        self.assertEqual(fractions.Fraction(5, 4), quantity_to_fraction('1 and 1/4'))
+        self.assertEqual(fractions.Fraction(5, 4), quantity_to_fraction('1-1/4'))
+
+    def test_negative_numbers(self):
+        self.assertEqual(fractions.Fraction(-5, 4), quantity_to_fraction('-1 1/4'))
+        self.assertEqual(fractions.Fraction(-5, 4), quantity_to_fraction('-1-1/4'))
+        self.assertEqual(fractions.Fraction(-5, 4), quantity_to_fraction('-1 - 1/4'))
+        self.assertEqual(fractions.Fraction(-5, 4), quantity_to_fraction('-1 and 1/4'))
 
 
 class DisplayFractionTagTest(TestCase):
@@ -516,3 +549,179 @@ class GetFractionUnicodeEntityTest(TestCase):
 
         entity = get_fraction_unicode_entity(Decimal('.875'))
         self.assertEqual('&frac78;', entity)
+
+
+class FractionFieldTest(TestCase):
+
+    def test_prepare_value_int(self):
+        """
+        Test that a standard int as input is returned
+        as a string of that int, so `1` is returned as `'1'`
+        """
+        field = FractionField()
+        result = field.prepare_value(1)
+        self.assertEqual('1', result)
+
+    def test_prepare_value_string(self):
+        """
+        Test string fractions are returns as is
+        """
+        field = FractionField()
+        result = field.prepare_value('1/4')
+        self.assertEqual('1/4', result)
+
+        result = field.prepare_value('1 1/4')
+        self.assertEqual('1 1/4', result)
+
+    def test_prepare_value_decimal(self):
+        """
+        Test that a :class:`decimal.Decimal` is properly
+        converted to a string fraction
+        """
+        field = FractionField()
+        result = field.prepare_value(Decimal('.5'))
+        self.assertEqual('1/2', result)
+
+    def test_prepare_value_float(self):
+        """
+        Test that a :class:`float` is properly
+        converted to a string fraction
+        """
+        field = FractionField()
+        result = field.prepare_value(float(.5))
+        self.assertEqual('1/2', result)
+
+    def test_prepare_value_fraction(self):
+        """
+        Test that a :class:`fractions.Fraction` is properly converted to a string fraction
+        """
+        field = FractionField()
+        result = field.prepare_value(fractions.Fraction('1/2'))
+        self.assertEqual('1/2', result)
+
+    def test_prepare_value_limit_denominator(self):
+        """
+        Test `prepare_value()` when the field has been initialized
+        with the limit_denominator paramter
+        """
+        field = FractionField(limit_denominator=3)
+        result = field.prepare_value(Decimal(1/3.0))
+        self.assertEqual('1/3', result)
+
+    def test_prepare_value_coerce_thirds(self):
+        """
+        Test that when coerce_thirds is specified, then .66, .67, and .33, etc.
+        are converted properly to 1/3 and 2/3
+        """
+        field = FractionField(coerce_thirds=True)
+        result = field.prepare_value(Decimal(1/3.0))
+        self.assertEqual('1/3', result)
+
+        result = field.prepare_value(Decimal(1/3.0))
+        self.assertEqual('1/3', result)
+
+        result = field.prepare_value(Decimal(2/3.0))
+        self.assertEqual('2/3', result)
+
+        result = field.prepare_value(Decimal(2/6.0))
+        self.assertEqual('1/3', result)
+
+        result = field.prepare_value(Decimal(4/6.0))
+        self.assertEqual('2/3', result)
+
+        result = field.prepare_value(Decimal(4/3.0))
+        self.assertEqual('1 1/3', result)
+
+        result = field.prepare_value(Decimal(5/3.0))
+        self.assertEqual('1 2/3', result)
+
+    def test_to_python_decimal(self):
+        """
+        Test that when a :class:`decimal.Decimal` is passed to to_python()
+        a :class:`fractions.Fraction` is returned
+        """
+        field = FractionField()
+        value = Decimal(.5)
+        result = field.to_python(value)
+        self.assertEqual(fractions.Fraction(value), result)
+
+    def test_to_python_float(self):
+        """
+        Test that whena :class:`float` is passed to to_python()
+        the value is returned as as :class:`fractions.Fraction`
+        """
+        field = FractionField()
+        value = .5
+        result = field.to_python(value)
+        self.assertEqual(fractions.Fraction(value), result)
+
+    def test_to_python_int(self):
+        """
+        Test that whena :class:`int` is passed to to_python()
+        the value is returned as as :class:`decimal.Decimal`
+        """
+        field = FractionField()
+        value = 1
+        result = field.to_python(value)
+        self.assertEqual(fractions.Fraction(value), result)
+
+    def test_to_python_int_string(self):
+        field = FractionField()
+        value = '2'
+        result = field.to_python(value)
+        self.assertEqual(fractions.Fraction('2'), result)
+
+    def test_to_python_float_string(self):
+        field =FractionField()
+        value = '0.5'
+        result = field.to_python(value)
+        self.assertEqual(fractions.Fraction(value), result)
+
+    def test_to_python_fraction_string(self):
+        field = FractionField()
+        value = '1/2'
+        result = field.to_python(value)
+        self.assertEqual(fractions.Fraction('.5'), result)
+
+    def test_to_python_mixed_fraction_string(self):
+        field = FractionField()
+        value = '1 1/2'
+        result = field.to_python(value)
+        self.assertEqual(fractions.Fraction('3/2'), result)
+
+    def test_to_python_hyphenated_mixed_fraction_string(self):
+        field = FractionField()
+        value = '1-1/2'
+        result = field.to_python(value)
+        self.assertEqual(fractions.Fraction('3/2'), result)
+
+        value = '1 - 1/2'
+        result = field.to_python(value)
+        self.assertEqual(fractions.Fraction('3/2'), result)
+
+    def test_to_python_anded_mixed_fraction_string(self):
+        field = FractionField()
+        value = '1 and 1/2'
+        result = field.to_python(value)
+        self.assertEqual(fractions.Fraction('3/2'), result)
+
+    def test_to_python_validation_errors(self):
+        field = FractionField()
+        with self.assertRaises(ValidationError):
+            field.to_python('abcd')
+
+        with self.assertRaises(ValidationError):
+            field.to_python('1 1 1/3')
+
+        with self.assertRaises(ValidationError):
+            field.to_python('1 1')
+
+    def test_max_value_set(self):
+        field = FractionField(max_value=fractions.Fraction('999/1000'))
+        with self.assertRaises(ValidationError):
+            field.run_validators(fractions.Fraction(1, 1))
+
+    def test_min_value_set(self):
+        field = FractionField(min_value=1)
+        with self.assertRaises(ValidationError):
+            field.run_validators(fractions.Fraction(999, 1000))
