@@ -3,7 +3,7 @@
 History
 -------
 
-master
+0.3.0 (2015-08-12)
 ++++++
 
 * Added forms.FractionField which returns fractions.Fraction instances
