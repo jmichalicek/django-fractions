@@ -10,8 +10,10 @@ Form Fields
 FractionField
 ________________________________________
 
-``DecimalFractionField(max_value=None, min_value=None,
-                       coerce_thirds=True, limit_denominator=None, use_mixed_numbers=True)``
+.. code-block:: python
+
+    FractionField(max_value=None, min_value=None,
+                  coerce_thirds=True, limit_denominator=None, use_mixed_numbers=True)
 
 Returns a :class:`fractions.Fraction` instance.  Takes a string formatted
 as a fraction such as 1/4, 1 1/4, 1-1/4, 1 and 1/4, or -1/4 as input in a form.
@@ -28,8 +30,10 @@ Example::
 DecimalFractionField
 ________________________________________
 
-``DecimalFractionField(max_value=None, min_value=None,
-                       coerce_thirds=True, limit_denominator=None, use_mixed_numbers=True)``
+.. code-block:: python
+
+    DecimalFractionField(max_value=None, min_value=None,
+                         coerce_thirds=True, limit_denominator=None, use_mixed_numbers=True)
 
 Returns a :class:`decimal.Decimal` instance.  Takes a string formatted
 as a fraction such as 1/4, 1 1/4, 1-1/4, 1 and 1/4, or -1/4 as input in a form.
