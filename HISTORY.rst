@@ -3,8 +3,14 @@
 History
 -------
 
+0.3.1 (2015-08-12)
+++++++++++++++++++
+
+* HISTORY.rst typo fixes
+* pypi release version fix
+
 0.3.0 (2015-08-12)
-++++++
+++++++++++++++++++
 
 * Added forms.FractionField which returns fractions.Fraction instances
 * Refactoring of common code with new forms.FractionField
