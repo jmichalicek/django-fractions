@@ -21,9 +21,9 @@ Quickstart
 Install django-fractions::
 
     pip install django-fractions
-    
+
 Add ``djfractions`` to ``settings.INSTALLED_APPS``
-    
+
 
 Then use it in a project::
 
@@ -52,17 +52,14 @@ Features
 
 
 TODO
-____
+-----
 
-* Read The Docs documentation
 * Add unicode_fraction template tag to display the unicode fraction entity if available
 * forms.FloatDecimalField to return a float rather than Decimal
 * forms.SplitFractionWidget for having separate numerator and denominator form fields
 * forms.SplitMixedFractionWidget for handling mixed number fractions with separate fields
 * models.DecimalBackedFractionField() to store a Decimal value but return/accept it as a fraction
 * models.FloatBackedFractionField() to store a Decimal value but return/accept it as a fraction
-* Tags and filters to convert to Decimal and/or float
-
 
 
 Cookiecutter Tools Used in Making This Package
