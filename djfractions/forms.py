@@ -115,7 +115,7 @@ class FractionField(forms.Field):
         if self.limit_denominator:
             fraction = fraction.limit_denominator(self.limit_denominator)
 
-        if self.coerce_thirds and not self.limit_denominator or self.limit_denominator > 3:
+        if self.coerce_thirds and (not self.limit_denominator or self.limit_denominator > 3):
             fraction = coerce_to_thirds(fraction)
 
         return fraction
