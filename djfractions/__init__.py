@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, absolute_import, division
 
-__version__ = '0.3.1'
+__version__ = '0.3.2'
 
 from decimal import Decimal
 import fractions
@@ -191,7 +191,7 @@ def get_fraction_parts(value, allow_mixed_numbers=True,
     if limit_denominator:
         f = f.limit_denominator(limit_denominator)
 
-    if coerce_thirds and not (limit_denominator and limit_denominator <= 3):
+    if coerce_thirds and (not limit_denominator or limit_denominator > 3):
         # if denominator is limited to less than 3, this would be in opposition to that.
         # if denominator is limited to 3 then this has naturally already been done.
         f = coerce_to_thirds(f)
