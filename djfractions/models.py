@@ -3,10 +3,11 @@
 from __future__ import unicode_literals, division, absolute_import
 
 from django.db.models import DecimalField
+from django.utils.translation import ugettext_lazy as _
 
 import fractions
 
-from . coerce_to_thirds
+from . import coerce_to_thirds
 
 class DecimalFractionField(DecimalField):
     """
@@ -19,7 +20,7 @@ class DecimalFractionField(DecimalField):
     description = _("Fraction number")
 
     def __init__(self, verbose_name=None, name=None, max_digits=None,
-                 decimal_places=None, limit_denominator=None, coerce_thirds=True
+                 decimal_places=None, limit_denominator=None, coerce_thirds=True,
                  **kwargs):
         self.limit_denominator = limit_denominator
         self.coerce_thirds = coerce_thirds
