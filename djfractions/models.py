@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import unicode_literals, division, absolute_import
+from __future__ import unicode_literals, division, absolute_import, print_function
 
 from django.db.models import DecimalField
 from django.utils.translation import ugettext_lazy as _
 
 import fractions
+import logging
 
 from . import coerce_to_thirds
+
+
+logger = logging.getLogger(__name__)
 
 class DecimalFractionField(DecimalField):
     """
@@ -35,7 +39,17 @@ class DecimalFractionField(DecimalField):
         if value is None:
             return value
 
-        return fractions.Fraction(value)
+        # this probably needs to call to_fraction()
+        # cann it just call to_python() for now?
+        #return fractions.Fraction(value)
+        return self.to_python(value)
+
+    def get_db_prep_save(self, value, connection):
+        v = float(value)
+        print('now v is %s and type %s' % (v, type(v)))
+        return self.get_db_prep_value(value, connection, prepared=False)
+        #return super(DecimalFractionField, self).get_db_prep_save(value=v, connection=connection)
+
 
     def to_python(self, value):
         if value is None:
@@ -43,14 +57,19 @@ class DecimalFractionField(DecimalField):
 
         # probably need similar error handling to
         # https://github.com/django/django/blob/stable/1.8.x/django/db/models/fields/__init__.py#L1598
-        return fractions.Fraction(value)
+        # Also probably need to actually call to_fraction(value) here
+        #return fractions.Fraction(value)
+        return self.to_fraction(value)
 
     def get_prep_value(self, value):
         # not super clear, docs sound like this must be overridden and is the
         # reverse of to_python, but
         # django.db.models.fields.DecimalField just calls self.to_python() here
+        # TODO:
+        # see https://docs.djangoproject.com/en/1.8/howto/custom-model-fields/#converting-python-objects-to-query-values
+        # for usage.
         if isinstance(value, fractions.Fraction):
-            value = float(fractions.Fraction)
+            value = float(value)  # should this be a decimal.Decimal?
         return super(DecimalFractionField, self).get_prep_value(value)
 
     def to_fraction(self, value):
@@ -59,6 +78,12 @@ class DecimalFractionField(DecimalField):
             fraction_value = fraction_value.limit_denominator(self.limit_denominator)
 
         if self.coerce_thirds and (not self.limit_denominator or self.limit_denominator > 3):
-            fraction_value = coerce_to_thirds(fraction)
+            fraction_value = coerce_to_thirds(fraction_value)
 
-        return fraction
+        return fraction_value
+
+    #def value_to_string(self, obj):
+    #    pass
+
+    # probably need to override deconstruct()
+    # probably need to override from_db_value() to return a fraction
