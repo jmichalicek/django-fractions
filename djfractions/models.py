@@ -2,9 +2,11 @@
 
 from __future__ import unicode_literals, division, absolute_import, print_function
 
+from django.db import connection
 from django.db.models import DecimalField
 from django.utils.translation import ugettext_lazy as _
 
+import decimal
 import fractions
 import logging
 
@@ -45,9 +47,15 @@ class DecimalFractionField(DecimalField):
         return self.to_python(value)
 
     def get_db_prep_save(self, value, connection):
-        v = float(value)
-        print('now v is %s and type %s' % (v, type(v)))
-        return self.get_db_prep_value(value, connection, prepared=False)
+        # for django 1.9 the following will need used.
+        if hasattr(connection.ops, 'adapt_decimalfield_value'):
+            return connection.ops.adapt_decimalfield_value(self.get_prep_value(value),
+                                                           self.max_digits, self.decimal_places)
+        else:
+            return connection.ops.value_to_db_decimal(self.get_prep_value(value),
+                                                      self.max_digits, self.decimal_places)
+        #v = float(value)
+        #return self.get_db_prep_value(value, connection, prepared=False)
         #return super(DecimalFractionField, self).get_db_prep_save(value=v, connection=connection)
 
 
@@ -68,9 +76,12 @@ class DecimalFractionField(DecimalField):
         # TODO:
         # see https://docs.djangoproject.com/en/1.8/howto/custom-model-fields/#converting-python-objects-to-query-values
         # for usage.
+        if value is None:
+            return value
+
         if isinstance(value, fractions.Fraction):
-            value = float(value)  # should this be a decimal.Decimal?
-        return super(DecimalFractionField, self).get_prep_value(value)
+            value = float(value)
+        return decimal.Decimal(value)
 
     def to_fraction(self, value):
         fraction_value = fractions.Fraction(value)

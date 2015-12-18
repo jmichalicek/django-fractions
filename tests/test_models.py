@@ -13,9 +13,21 @@ class DecimalFractionFieldTest(TestCase):
     def test_field(self):
         f = fractions.Fraction(1, 2)
         test_model = TestModel(data=f)
-        print('type is %s' % type(test_model.data))
         test_model.save()
-#        self.assertEqual(f, test_model.data)
+        self.assertEqual(f, test_model.data)
 
-#        updated = TestModel.objects.get(id=test_model.id)
-#        self.assertEqual(f, updated.data)
+        looked_up_model = TestModel.objects.get(id=test_model.id)
+        self.assertEqual(f, looked_up_model.data)
+        self.assertIsInstance(looked_up_model.data, fractions.Fraction)
+
+    def test_coerce_thirds(self):
+        pass
+
+    def test_thirds_without_coerce(self):
+        pass
+
+    def test_set_float(self):
+        pass
+
+    def test_set_decimal(self):
+        pass
