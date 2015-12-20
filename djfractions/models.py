@@ -54,10 +54,6 @@ class DecimalFractionField(DecimalField):
         else:
             return connection.ops.value_to_db_decimal(self.get_prep_value(value),
                                                       self.max_digits, self.decimal_places)
-        #v = float(value)
-        #return self.get_db_prep_value(value, connection, prepared=False)
-        #return super(DecimalFractionField, self).get_db_prep_save(value=v, connection=connection)
-
 
     def to_python(self, value):
         if value is None:
@@ -81,10 +77,12 @@ class DecimalFractionField(DecimalField):
 
         if isinstance(value, fractions.Fraction):
             value = float(value)
+
         return decimal.Decimal(value)
 
     def to_fraction(self, value):
         fraction_value = fractions.Fraction(value)
+
         if self.limit_denominator:
             fraction_value = fraction_value.limit_denominator(self.limit_denominator)
 
