@@ -4,6 +4,36 @@ Usage
 
 Add ``djfractions`` to ``settings.INSTALLED_APPS``
 
+Model Fields
+------------
+
+DecimalFractionField
+--------------------
+
+.. code-block:: python
+
+    djfractions.models.DecimalFractionField(verbose_name=None,
+                                            name=None,
+                                            max_digits=None,
+                                            decimal_places=None,
+                                            limit_denominator=None,
+                                            coerce_thirds=True,
+                                            **kwargs)
+
+Takes a :class:`fractions.Fraction` value, stores it as a decimal value,
+and then returns it as a :class:`fractions.Fraction`. Due to Django's
+:class:`models.DecimalField` implementation it is recommended that the
+limit_denominator` or `decimal_places` arguments be used.  Without them
+certain fractions, including common ones such as 1/3, will result in
+and exception being raised when the model is saved.
+
+:param str verbose_name: The verbose name of the field
+:param str name: Name of the field
+:param int max_digits: Maximum number of digits to use for the Decimal representation
+:param int decimal_places: Maximum number of decimal places to use for the Decimal representation
+:param int limit_denominator:  Limits the fraction's denominator to this value if it is set.
+:paraam bool coerce_thirds: If True, then when values which appear to be Decimal values which started as 1/3 or 2/3 will be forced back to 1/3 or 2/3 when retrieved from the database.
+
 Form Fields
 -----------
 
