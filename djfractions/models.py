@@ -23,7 +23,7 @@ class DecimalFractionField(DecimalField):
     default_error_messages = {
         'invalid': _("'%(value)s' value must be a fraction number."),
     }
-    description = _("Fraction number")
+    description = _("Fraction number stored in the database as a Decimal")
 
     def __init__(self, verbose_name=None, name=None, max_digits=None,
                  decimal_places=None, limit_denominator=None, coerce_thirds=True,
@@ -93,8 +93,12 @@ class DecimalFractionField(DecimalField):
 
         return fraction_value
 
+    def deconstruct(self):
+        name, path, args, kwargs = super(DecimalFractionField, self).deconstruct()
+        kwargs['limit_denominator'] = self.limit_denominator
+        kwargs['coerce_thirds'] = self.coerce_thirds
+
+        return name, path, args, kwargs
+
     #def value_to_string(self, obj):
     #    pass
-
-    # probably need to override deconstruct()
-    # probably need to override from_db_value() to return a fraction
