@@ -3,7 +3,7 @@
 History
 -------
 
-Master (205-12-20)
+Master (2015-12-20)
 ++++++++++++++++++
 
 * Added djfractions.models.DecimalFractionField which stores fractions.Fraction values as decimals in the dataase.
