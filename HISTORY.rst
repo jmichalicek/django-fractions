@@ -3,12 +3,16 @@
 History
 -------
 
+Master (205-12-20)
+++++++++++++++++++
+
+* Added djfractions.models.DecimalFractionField which stores fractions.Fraction values as decimals in the dataase.
+
 0.3.2 (2015-08-28)
 ++++++++++++++++++
 
 * Fixed boolean logic for when to coerce values to thirds in
   in forms.DecimalFractionField and get_fraction_parts()
-
 
 0.3.1 (2015-08-12)
 ++++++++++++++++++
