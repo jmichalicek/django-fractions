@@ -10,10 +10,11 @@ import decimal
 import fractions
 import logging
 
-from . import coerce_to_thirds
+from .. import coerce_to_thirds
 
 
 logger = logging.getLogger(__name__)
+
 
 class DecimalFractionField(DecimalField):
     """
@@ -61,8 +62,6 @@ class DecimalFractionField(DecimalField):
 
         # probably need similar error handling to
         # https://github.com/django/django/blob/stable/1.8.x/django/db/models/fields/__init__.py#L1598
-        # Also probably need to actually call to_fraction(value) here
-        #return fractions.Fraction(value)
         return self.to_fraction(value)
 
     def get_prep_value(self, value):
@@ -97,6 +96,3 @@ class DecimalFractionField(DecimalField):
         kwargs['coerce_thirds'] = self.coerce_thirds
 
         return name, path, args, kwargs
-
-    #def value_to_string(self, obj):
-    #    pass
