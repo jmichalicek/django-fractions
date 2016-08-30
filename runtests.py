@@ -22,6 +22,16 @@ try:
         ],
         SITE_ID=1,
         MIDDLEWARE_CLASSES=(),
+        TEMPLATES = [
+            {'BACKEND': 'django.template.backends.django.DjangoTemplates',
+             'DIRS': [],
+             'APP_DIRS': True,
+             'OPTIONS': {
+                 'context_processors': []
+             }
+            }
+        ]
+
     )
 
     try:
