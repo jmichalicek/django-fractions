@@ -3,10 +3,12 @@
 History
 -------
 
-Master (2015-12-20)
+0.4.0 (2016-08-29)
 ++++++++++++++++++
 
 * Added djfractions.models.DecimalFractionField which stores fractions.Fraction values as decimals in the dataase.
+* Better usage of tox to test against different Python and Django versions
+* Added testing against Django 1.10
 
 0.3.2 (2015-08-28)
 ++++++++++++++++++
