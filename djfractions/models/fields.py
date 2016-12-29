@@ -2,8 +2,10 @@
 
 from __future__ import unicode_literals, division, absolute_import, print_function
 
+from django.core import checks
 from django.db import connection
 from django.db.models import DecimalField, Field
+from django.utils import six
 from django.utils.translation import ugettext_lazy as _
 
 import decimal
@@ -22,6 +24,7 @@ class DecimalFractionField(Field):
     Field which stores values as a Decimal value, but uses
     :class:`fractions.Fraction` for its value
     """
+    empty_strings_allowed = False
     default_error_messages = {
         'invalid': _("'%(value)s' value must be a fraction number."),
     }
@@ -33,15 +36,82 @@ class DecimalFractionField(Field):
         self.limit_denominator = limit_denominator
         self.coerce_thirds = coerce_thirds
 
-
         # for decimal stuff
         self.max_digits, self.decimal_places = max_digits, decimal_places
 
         super(DecimalFractionField, self).__init__(verbose_name=verbose_name,
                                                    name=name,
-#                                                   max_digits=max_digits,
-#                                                   decimal_places=decimal_places,
                                                    **kwargs)
+
+    def check(self, **kwargs):
+        errors = super(DecimalFractionField, self).check(**kwargs)
+
+        digits_errors = self._check_decimal_places()
+        digits_errors.extend(self._check_max_digits())
+        if not digits_errors:
+            errors.extend(self._check_decimal_places_and_max_digits(**kwargs))
+        else:
+            errors.extend(digits_errors)
+        return errors
+
+    def _check_decimal_places(self):
+        try:
+            decimal_places = int(self.decimal_places)
+            if decimal_places < 0:
+                raise ValueError()
+        except TypeError:
+            return [
+                checks.Error(
+                    "DecimalFractionFields must define a 'decimal_places' attribute.",
+                    obj=self,
+                    id='fields.E130',
+                )
+            ]
+        except ValueError:
+            return [
+                checks.Error(
+                    "'decimal_places' must be a non-negative integer.",
+                    obj=self,
+                    id='fields.E131',
+                )
+            ]
+        else:
+            return []
+
+    def _check_max_digits(self):
+        try:
+            max_digits = int(self.max_digits)
+            if max_digits <= 0:
+                raise ValueError()
+        except TypeError:
+            return [
+                checks.Error(
+                    "DecimalFractionFields must define a 'max_digits' attribute.",
+                    obj=self,
+                    id='fields.E132',
+                )
+            ]
+        except ValueError:
+            return [
+                checks.Error(
+                    "'max_digits' must be a positive integer.",
+                    obj=self,
+                    id='fields.E133',
+                )
+            ]
+        else:
+            return []
+
+    def _check_decimal_places_and_max_digits(self, **kwargs):
+        if int(self.decimal_places) > int(self.max_digits):
+            return [
+                checks.Error(
+                    "'max_digits' must be greater or equal to 'decimal_places'.",
+                    obj=self,
+                    id='fields.E134',
+                )
+            ]
+        return []
 
     def from_db_value(self, value, expression, connection, context):
         if value is None:
@@ -116,16 +186,29 @@ class DecimalFractionField(Field):
         defaults.update(kwargs)
         return super(DecimalFractionField, self).formfield(**defaults)
 
-    # added this
     def get_internal_type(self):
-        return "DecimalFractionField"
+        # returning DecimalField, since we use the same backing column type as that
+        # and this is safer than overriding db_type() and db_check() since that would
+        # require maintaining the mapping for every db adapter.
+        return "DecimalField"
 
-    #def format_number(self, value):
+    def _format(self, value):
+        if isinstance(value, six.string_types):
+            return value
+        else:
+            return self.format_number(value)
 
+    def format_number(self, value):
+        """
+        Formats a number into a string with the requisite number of digits and
+        decimal places.
+        """
+        # Method moved to django.db.backends.utils.
+        #
+        # It is preserved because it is used by the oracle backend
+        # (django.db.backends.oracle.query), and also for
+        # backwards-compatibility with any external code which may have used
+        # this method.
+        from django.db.backends import utils
+        return utils.format_number(value, self.max_digits, self.decimal_places)
 
-    #@cached_property
-    #def validators(self):
-    #    if isinstance(decimal.Decimal, )
-    #    return super(DecimalField, self).validators + [
-    #        validators.DecimalValidator(self.max_digits, self.decimal_places)
-    #    ]
