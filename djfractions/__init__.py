@@ -47,7 +47,7 @@ def is_fraction(s):
 
     :param s: A string value to check if it is formatted as a fraction.
     """
-    return bool(re.match(r'^\d+/\d+$', s))
+    return bool(re.match(r'^-?\d+/\d+$', s))
 
 
 def coerce_to_thirds(value):
@@ -75,6 +75,7 @@ def quantity_to_decimal(quantity_string):
     """
 
     # get actual fraction-like strings to be N/N with no spaces
+    quantity_string = quantity_string.strip()
     quantity_string = re.sub(r'\s*/\s*', '/', quantity_string)
 
     if is_number(quantity_string):
@@ -86,7 +87,7 @@ def quantity_to_decimal(quantity_string):
     # assume the a hyphen between a whole value and fraction such as 1-1/4
     # is a separator and not a negative fraction.
     # If the negative is first though, then we need to keep it negative.
-    positive_or_negative = -1 if quantity_string.strip().startswith('-') else 1
+    positive_or_negative = -1 if quantity_string.startswith('-') else 1
     quantity_string = quantity_string.replace('-', ' ')
 
     parts = quantity_string.split()
@@ -114,6 +115,7 @@ def quantity_to_fraction(quantity_string):
     :param quantity_string: String to convert to a :class:`fractions.Fraction`
     """
     # get actual fraction-like strings to be N/N with no spaces
+    quantity_string = quantity_string.strip()
     quantity_string = re.sub(r'\s*/\s*', '/', quantity_string)
     if is_number(quantity_string):
         return fractions.Fraction(quantity_string)
@@ -122,21 +124,22 @@ def quantity_to_fraction(quantity_string):
         return _fraction_string_to_fraction(quantity_string)
 
     # it must be a something like 1 1/4
-    # assume the a hyphen between a whole value and fraction such as 1-1/4
+    # assume that a hyphen between a whole value and fraction such as 1-1/4
     # is a separator and not a negative fraction.
     # If the negative is first though, then we need to keep it negative.
     # Cannot just keep the fraction on the int or we end up subtraction.
     # -1 1/4 becomes -3/4 when what is meant is -5/4
-    positive_or_negative = -1 if quantity_string.strip().startswith('-') else 1
+    positive_or_negative = -1 if quantity_string.startswith('-') else 1
 
     # non-capturing group in the middle handls just a space, hyphen with
     # optional spaces, or the word and.  Examples:
     # 1 1/4, 1-1/4, 1 - 1/4, 1 and 1/4
-    parts = re.match(r'^-?(\d+)(?:\s+|\s*-?\s*|\s+and\s+)(\d+\/\d+)', quantity_string.strip())
+    parts = re.match(r'^-?(\d+)(?:\s+|\s*-?\s*|\s+and\s+)(\d+\/\d+)', quantity_string)
     # parts.group(0) is the entire string, 1 is the whole number bit
     f = fractions.Fraction(parts.group(2))
     f = (f + int(parts.group(1))) * positive_or_negative
     return f
+
 
 def _fraction_string_to_fraction(fraction):
     """
@@ -146,6 +149,7 @@ def _fraction_string_to_fraction(fraction):
     numerator = int(parts[0])
     denominator = int(parts[1])
     return fractions.Fraction(numerator, denominator)
+
 
 def _fraction_string_to_decimal(fraction):
     """

@@ -3,7 +3,7 @@
 from __future__ import unicode_literals, division, absolute_import, print_function
 
 from django.db import connection
-from django.db.models import DecimalField
+from django.db.models import DecimalField, Field
 from django.utils.translation import ugettext_lazy as _
 
 import decimal
@@ -11,12 +11,13 @@ import fractions
 import logging
 
 from .. import coerce_to_thirds
+from .. import forms as fraction_forms
 
 
 logger = logging.getLogger(__name__)
 
 
-class DecimalFractionField(DecimalField):
+class DecimalFractionField(Field):
     """
     Field which stores values as a Decimal value, but uses
     :class:`fractions.Fraction` for its value
@@ -32,10 +33,14 @@ class DecimalFractionField(DecimalField):
         self.limit_denominator = limit_denominator
         self.coerce_thirds = coerce_thirds
 
+
+        # for decimal stuff
+        self.max_digits, self.decimal_places = max_digits, decimal_places
+
         super(DecimalFractionField, self).__init__(verbose_name=verbose_name,
                                                    name=name,
-                                                   max_digits=max_digits,
-                                                   decimal_places=decimal_places,
+#                                                   max_digits=max_digits,
+#                                                   decimal_places=decimal_places,
                                                    **kwargs)
 
     def from_db_value(self, value, expression, connection, context):
@@ -95,4 +100,32 @@ class DecimalFractionField(DecimalField):
         kwargs['limit_denominator'] = self.limit_denominator
         kwargs['coerce_thirds'] = self.coerce_thirds
 
+        # added this
+        # copied from decimal field
+        if self.max_digits is not None:
+            kwargs['max_digits'] = self.max_digits
+        if self.decimal_places is not None:
+            kwargs['decimal_places'] = self.decimal_places
+
         return name, path, args, kwargs
+
+    def formfield(self, **kwargs):
+        defaults ={
+            'form_class': fraction_forms.FractionField
+        }
+        defaults.update(kwargs)
+        return super(DecimalFractionField, self).formfield(**defaults)
+
+    # added this
+    def get_internal_type(self):
+        return "DecimalFractionField"
+
+    #def format_number(self, value):
+
+
+    #@cached_property
+    #def validators(self):
+    #    if isinstance(decimal.Decimal, )
+    #    return super(DecimalField, self).validators + [
+    #        validators.DecimalValidator(self.max_digits, self.decimal_places)
+    #    ]
