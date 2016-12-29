@@ -21,11 +21,9 @@ DecimalFractionField
                                             **kwargs)
 
 Takes a :class:`fractions.Fraction` value, stores it as a decimal value,
-and then returns it as a :class:`fractions.Fraction`. Due to Django's
-:class:`models.DecimalField` implementation it is recommended that the
-limit_denominator` or `decimal_places` arguments be used.  Without them
-certain fractions, including common ones such as 1/3, will result in
-and exception being raised when the model is saved.
+and then returns it as a :class:`fractions.Fraction`. This field is highly
+based on Django's :class:`models.DecimalField` implementation and so
+the `max_digits` and `decimal_places` arguments are required.
 
 :param str verbose_name: The verbose name of the field
 :param str name: Name of the field

@@ -3,6 +3,23 @@
 History
 -------
 
+Current
++++++++++
+
+* Stop subclassing Django's DecimalField and duplicate small amounts of code
+  as necessary for db backend compatibility.  Too many things need to be
+  handled differently.
+* Update forms.FractionField to skip over max_digits and decimal_places kwargs which
+  will get passed in by models.fields.DecimalFractionField
+* Add models.fields.DecimalFractionField.formfield() so that a
+  forms.FractionField will be used by default
+* Fix quantity_to_decimal and quantity_to_fraction to strip leading and trailing
+  spaces before pattern matching and converting to a decimal or fraction
+* Allow for leading negative sign with forms.FractionField input values
+* Fix is_fraction() to allow leading negative sign
+* Add `max_digits` and `decimal_places` params to DecimalFractionFields in test model
+
+
 0.4.0 (2016-08-29)
 ++++++++++++++++++
 
