@@ -39,10 +39,10 @@ class FractionField(forms.Field):
     }
 
     # matches standard 'x/y' fractions with 0 or more spaces before, after, or between characters.
-    FRACTION_MATCH = re.compile(r'^\s*\d+\s*\/\s*\d+\s*$')
+    FRACTION_MATCH = re.compile(r'^\s*-?\s*\d+\s*\/\s*\d+\s*$')
     # matches mixed numbers such as '1 1/2' with any number of spaces and with common
     # separators of - (hyphen) and the word 'and' between the whole number and fraction part
-    MIXED_NUMBER_MATCH = re.compile(r'^\s*\d+(\s+|\s+and\s+|\s*\-\s*)\d+\s*\/\s*\d+\s*$')
+    MIXED_NUMBER_MATCH = re.compile(r'^\s*-?\s*\d+(\s+|\s+and\s+|\s*\-\s*)\d+\s*\/\s*\d+\s*$')
 
     def __init__(self, max_value=None, min_value=None, limit_denominator=None,
                  coerce_thirds=True, use_mixed_numbers=True, *args, **kwargs):
@@ -51,6 +51,9 @@ class FractionField(forms.Field):
         self.use_mixed_numbers = use_mixed_numbers
         self.max_value, self.min_value = max_value, min_value
 
+        dp = kwargs.pop('decimal_places', None)
+        md = kwargs.pop('max_digits', None)
+
         super(FractionField, self).__init__(*args, **kwargs)
         if max_value is not None:
             self.validators.append(validators.MaxValueValidator(max_value))
@@ -58,6 +61,9 @@ class FractionField(forms.Field):
             self.validators.append(validators.MinValueValidator(min_value))
 
     def prepare_value(self, value):
+        if value is None:
+            return value
+
         try:
             whole_number, numerator, denominator = get_fraction_parts(value,
                                                                       self.use_mixed_numbers,
