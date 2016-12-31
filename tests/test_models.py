@@ -1,4 +1,6 @@
 from __future__ import print_function, division, absolute_import, unicode_literals
+
+from django.core import checks
 from django.db import models
 from django.test import TestCase
 
@@ -6,6 +8,8 @@ import decimal
 import fractions
 
 from djfractions.models import DecimalFractionField
+import djfractions.forms
+
 from .models import TestModel
 
 class DecimalFractionFieldTest(TestCase):
@@ -39,3 +43,37 @@ class DecimalFractionFieldTest(TestCase):
         self.assertEqual(fractions.Fraction(3333333333, 10000000000),
                          test_model.decimal_places_limited)
         self.assertEqual(two_thirds, test_model.coerce_thirds_true)
+
+    def test_formfield_method_returns_correct_type(self):
+        """
+        Test that FractionDecimalField returns a forms.FractionField
+        """
+        dff = DecimalFractionField(name='frac', max_digits=10, decimal_places=5)
+        self.assertIsInstance(dff.formfield(), djfractions.forms.FractionField)
+
+    def test_max_digits_arg_is_required(self):
+        """
+        Test that the max_digits arg is required and raises and exception if not there
+        """
+        dff = DecimalFractionField(name='frac', decimal_places=5)
+        errors = dff.check()
+        self.assertEqual(
+                [checks.Error(
+                    "DecimalFractionFields must define a 'max_digits' attribute.",
+                    obj=dff,
+                    id='fields.E132')],
+                errors)
+
+    def test_decimal_places_arg_is_required(self):
+        """
+        Test that the decimal_places arg is required and raises an exception if not there
+        """
+        dff = DecimalFractionField(name='frac', max_digits=5)
+        errors = dff.check()
+        self.assertEqual(
+                [checks.Error(
+                    "DecimalFractionFields must define a 'decimal_places' attribute.",
+                    obj=dff,
+                    id='fields.E130')],
+                errors)
+
