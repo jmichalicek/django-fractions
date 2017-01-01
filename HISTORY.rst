@@ -6,9 +6,12 @@ History
 Current
 +++++++++
 
+
+1.0.0 (2016.12-31)
+++++++++++++++++++
 * Stop subclassing Django's DecimalField and duplicate small amounts of code
   as necessary for db backend compatibility.  Too many things need to be
-  handled differently.
+  handled differently.  Main cause of major version bump.
 * Update forms.FractionField to skip over max_digits and decimal_places kwargs which
   will get passed in by models.fields.DecimalFractionField
 * Add models.fields.DecimalFractionField.formfield() so that a
@@ -17,7 +20,8 @@ Current
   spaces before pattern matching and converting to a decimal or fraction
 * Allow for leading negative sign with forms.FractionField input values
 * Fix is_fraction() to allow leading negative sign
-* Add `max_digits` and `decimal_places` params to DecimalFractionFields in test model
+* Add `max_digits` and `decimal_places` params to DecimalFractionField in test model
+* Additional test cases for models.fields.DecimalFractionField
 
 
 0.4.0 (2016-08-29)
