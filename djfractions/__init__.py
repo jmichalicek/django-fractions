@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, absolute_import, division
 
-__version__ = '0.4.0'
+__version__ = '1.0.0'
 
 from decimal import Decimal
 import fractions
