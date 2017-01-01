@@ -10,7 +10,7 @@ import fractions
 from djfractions.models import DecimalFractionField
 import djfractions.forms
 
-from .models import TestModel
+from .models import TestModel, BadTestModel
 
 class DecimalFractionFieldTest(TestCase):
 
@@ -55,7 +55,8 @@ class DecimalFractionFieldTest(TestCase):
         """
         Test that the max_digits arg is required and raises and exception if not there
         """
-        dff = DecimalFractionField(name='frac', decimal_places=5)
+
+        dff = BadTestModel._meta.get_field('missing_max_digits')
         errors = dff.check()
         self.assertEqual(
                 [checks.Error(
@@ -68,7 +69,7 @@ class DecimalFractionFieldTest(TestCase):
         """
         Test that the decimal_places arg is required and raises an exception if not there
         """
-        dff = DecimalFractionField(name='frac', max_digits=5)
+        dff = BadTestModel._meta.get_field('missing_decimal_places')
         errors = dff.check()
         self.assertEqual(
                 [checks.Error(
