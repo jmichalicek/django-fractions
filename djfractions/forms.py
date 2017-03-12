@@ -147,7 +147,7 @@ class DecimalFractionField(FractionField):
     :ivar int decimal_places: The maximum number of decimal places the
         resulting Decimal value may have
     :ivar int max_digits: The maximum number of digits, including decimal
-        places, the resultin Decimal may have.
+        places, the resulting Decimal may have.
     """
 
     default_error_messages = {
@@ -166,22 +166,31 @@ class DecimalFractionField(FractionField):
             'max'),
     }
 
+    
+    #def __init__(self, max_value=None, min_value=None, limit_denominator=None,
+    #             coerce_thirds=True, use_mixed_numbers=True, *args, **kwargs):
+    #    self.coerce_thirds = coerce_thirds
+    #    self.limit_denominator = limit_denominator
+
+    #    self.decimal_places = kwargs.get('decimal_places', None)
+    #    self.max_digits = kwargs.get('max_digits', None)
+    #    self.round_decimal = kwargs.get('round_decimal', False)
+    #    super(DecimalFractionField, self).__init__(max_value=max_value, min_value=min_value,
+    #            limit_denominator=limit_denominator, coerce_thirds=coerce_thirds,
+    #            use_mixed_numbers=use_mixed_numbers, *args, **kwargs)
+
+
     def __init__(self, max_value=None, min_value=None, limit_denominator=None,
                  coerce_thirds=True, use_mixed_numbers=True, *args, **kwargs):
-        self.coerce_thirds = coerce_thirds
-        self.limit_denominator = limit_denominator
         self.use_mixed_numbers = use_mixed_numbers
         self.max_value, self.min_value = max_value, min_value
 
-
         self.decimal_places = kwargs.pop('decimal_places', None)
         self.max_digits = kwargs.pop('max_digits', None)
+        self.round_decimal = kwargs.pop('round_decimal', False)
 
         super(DecimalFractionField, self).__init__(*args, **kwargs)
-#        if max_value is not None:
-#            self.validators.append(validators.MaxValueValidator(max_value))
-#        if min_value is not None:
-#            self.validators.append(validators.MinValueValidator(min_value))
+
 
     def to_python(self, value):
         """
@@ -213,7 +222,64 @@ class DecimalFractionField(FractionField):
                 raise ValidationError(self.error_messages['invalid'], code='invalid')
         else:
             value = Decimal(value)
+
         return value
+
+    #def clean(self, value):
+    #    if self.max_digits is not None and self.decimal_places is not None and self.round_decimal:
+    #        value = self.round_decimal_value(value)
+    #    return super(DecimalFractionField, self).clean(value) 
+
+    def round_decimal_value(self, value):
+        # NOT SURE THIS IS A GOOD IDEA
+        # This could muck with numbers in a way a user does not
+        # expect due to the max_digits handling.  It might be better
+        # to just have users handle rounding and digit manipulation
+        # themselves in Form.clean_FOO()
+        quantize_string = u'0' * self.decimal_places
+        quantize_string = u'.%s' % quantize_string
+        # round to max number of decimal places
+        value = value.quantize(Decimal(quantize_string))
+        sign, digittuple, exponent = value.as_tuple()
+        digits, whole_digits, decimals = self._get_digit_counts(value)
+
+        if digits <= self.max_digits:
+            # total # digits is ok, but need to check if decimal places
+            # need rounded
+            if decimals > self.decimal_places:
+                decimals_to_remove = self.decimal_places - decimals
+            else:
+                decimals_to_remove = 0
+            allowed_decimals = decimals - decimals_to_remove
+        elif whole_digits <= self.max_digits:
+            # can we trim enough decimals to fit?
+            allowed_decimals = self.max_digits - whole_digits
+        else:
+            allowed_decimals = decimals
+
+        # this will give us '0' or '00', etc.
+        quantize_string = u'0'
+        if allowed_decimals > 0:
+            quantize_string = quantize_string * allowed_decimals
+            # if at least one decimal place, drop a decimal point in front.
+            # if no decimal places can be used to reac max_digits then
+            # use no leading decimal, causing Decimal.quantize() to round to
+            # a whole number
+            quantize_string = u'.%s' % quantize_string 
+        value = value.quantize(Decimal(quantize_string))
+        return value
+
+    def _get_digit_counts(self, value):
+        """
+        Returns tuple of (total_digits, whole_digits, decimals)
+        """
+        sign, digittuple, exponent = value.as_tuple()
+        decimals = abs(exponent)
+        digits = len(digittuple)
+        if decimals > digits:
+            digits = decimals
+        whole_digits = digits - decimals
+        return (digits, whole_digits, decimals)
 
     def validate(self, value):
         super(DecimalFractionField, self).validate(value)

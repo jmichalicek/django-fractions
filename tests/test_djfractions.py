@@ -454,6 +454,12 @@ class DecimalFractionFieldTest(TestCase):
         with self.assertRaises(ValidationError):
             field.validate(Decimal("-Inf"))
 
+    def test_round_decimal_value_method(self):
+        field = DecimalFractionField(max_digits=5, decimal_places=2)
+        self.assertEqual(Decimal('100.01'), field.round_decimal_value(Decimal('100.011')))
+        self.assertEqual(Decimal('1.01'), field.round_decimal_value(Decimal('1.011')))
+        self.assertEqual(Decimal('10001'), field.round_decimal_value(Decimal('10000.6')))
+
 class GetFractionUnicodeEntityTest(TestCase):
 
     def test_one_half(self):
