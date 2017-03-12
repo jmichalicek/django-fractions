@@ -414,16 +414,35 @@ class DecimalFractionFieldTest(TestCase):
         self.assertEqual(Decimal(3/2.0).quantize(Decimal('0.000')),
                          result.quantize(Decimal('0.000')))
 
-    def test_to_python_validation_errors(self):
+    def test_to_python_method_validation_errors(self):
+        """
+        Exceptions here are tested for and raised from within to_python()
+        """
         field = DecimalFractionField()
         with self.assertRaises(ValidationError):
-            field.to_python('abcd')
+            field.clean('abcd')
 
         with self.assertRaises(ValidationError):
-            field.to_python('1 1 1/3')
+            field.clean('1 1 1/3')
 
         with self.assertRaises(ValidationError):
-            field.to_python('1 1')
+            field.clean('1 1')
+
+    def test_decimal_places_validation_errors(self):
+        """
+        Test decimal specific validation.  In django
+        1.8 this happens in validate() but once support for 1.8
+        is dropped it will be in run_validators, so this test uses clean()
+        """
+        field = DecimalFractionField(max_digits=3, decimal_places=2)
+
+        with self.assertRaises(ValidationError):
+            # too many non-decimal digits
+            field.clean('10')
+
+        with self.assertRaises(ValidationError):
+            # too many decimal digits
+            field.clean('1/100')
 
     def test_validate_inf_raises_error(self):
         field = DecimalFractionField()

@@ -1,4 +1,4 @@
-from __future__ import unicode_literals, absolute_import, division
+from __future__ import unicode_literals, absolute_import, division, print_function
 
 from django import forms
 from django.core.exceptions import ValidationError
@@ -20,8 +20,8 @@ class FractionField(forms.Field):
     Displays and takes input as a fraction string such as 1/4 or 1 1/4
     but returns a :class:`fractions.Fraction`.
 
-    fraction = DecimalFractionField(coerce_thirds=True, limit_denominator=None,
-                                    use_mixed_numbers=True)
+    fraction = FractionField(coerce_thirds=True, limit_denominator=None,
+                             use_mixed_numbers=True)
 
     :ivar bool coerce_thirds: Defaults to True.  If True
         then .3 repeating is forced to 1/3 rather than 3/10, 33/100, etc.
@@ -50,9 +50,6 @@ class FractionField(forms.Field):
         self.limit_denominator = limit_denominator
         self.use_mixed_numbers = use_mixed_numbers
         self.max_value, self.min_value = max_value, min_value
-
-        dp = kwargs.pop('decimal_places', None)
-        md = kwargs.pop('max_digits', None)
 
         super(FractionField, self).__init__(*args, **kwargs)
         if max_value is not None:
@@ -144,7 +141,47 @@ class DecimalFractionField(FractionField):
         decimals and floats greater than 1 will be converted to a mixed
         number such as `1 1/2` in the form field's value.  If False then
         improper fractions such as `3/2` will be created. Defaults to True.
+    :ivar max_value: The maximum value allowed
+    :ivar min_value: The minimum value allowed
+
+    :ivar int decimal_places: The maximum number of decimal places the
+        resulting Decimal value may have
+    :ivar int max_digits: The maximum number of digits, including decimal
+        places, the resultin Decimal may have.
     """
+
+    default_error_messages = {
+        'invalid': _('Enter a fraction such as 1 1/4 or 1/4.'),
+        'max_digits': ungettext_lazy(
+            'Ensure that there are no more than %(max)s digit in total.',
+            'Ensure that there are no more than %(max)s digits in total.',
+            'max'),
+        'max_decimal_places': ungettext_lazy(
+            'Ensure that there are no more than %(max)s decimal place.',
+            'Ensure that there are no more than %(max)s decimal places.',
+            'max'),
+        'max_whole_digits': ungettext_lazy(
+            'Ensure that there are no more than %(max)s digit before the decimal point.',
+            'Ensure that there are no more than %(max)s digits before the decimal point.',
+            'max'),
+    }
+
+    def __init__(self, max_value=None, min_value=None, limit_denominator=None,
+                 coerce_thirds=True, use_mixed_numbers=True, *args, **kwargs):
+        self.coerce_thirds = coerce_thirds
+        self.limit_denominator = limit_denominator
+        self.use_mixed_numbers = use_mixed_numbers
+        self.max_value, self.min_value = max_value, min_value
+
+
+        self.decimal_places = kwargs.pop('decimal_places', None)
+        self.max_digits = kwargs.pop('max_digits', None)
+
+        super(DecimalFractionField, self).__init__(*args, **kwargs)
+#        if max_value is not None:
+#            self.validators.append(validators.MaxValueValidator(max_value))
+#        if min_value is not None:
+#            self.validators.append(validators.MinValueValidator(min_value))
 
     def to_python(self, value):
         """
@@ -188,4 +225,38 @@ class DecimalFractionField(FractionField):
         if value != value or value == Decimal("Inf") or value == Decimal("-Inf"):
             raise ValidationError(self.error_messages['invalid'], code='invalid')
 
+        # max digits/decimal places validation.  Taken from django 1.8 forms.DecimalField
+        # until this lib stops support django 1.8.  After that this can use
+        # validators.DecimalValidator (added in django 1.9) added up in __init__()
+        sign, digittuple, exponent = value.as_tuple()
+        decimals = abs(exponent)
+        # digittuple doesn't include any leading zeros.
+        digits = len(digittuple)
+        if decimals > digits:
+            # We have leading zeros up to or past the decimal point.  Count
+            # everything past the decimal point as a digit.  We do not count
+            # 0 before the decimal point as a digit since that would mean
+            # we would not allow max_digits = decimal_places.
+            digits = decimals
+        whole_digits = digits - decimals
+
+        if self.max_digits is not None and digits > self.max_digits:
+            raise ValidationError(
+                self.error_messages['max_digits'],
+                code='max_digits',
+                params={'max': self.max_digits},
+            )
+        if self.decimal_places is not None and decimals > self.decimal_places:
+            raise ValidationError(
+                self.error_messages['max_decimal_places'],
+                code='max_decimal_places',
+                params={'max': self.decimal_places},
+            )
+        if (self.max_digits is not None and self.decimal_places is not None
+                and whole_digits > (self.max_digits - self.decimal_places)):
+            raise ValidationError(
+                self.error_messages['max_whole_digits'],
+                code='max_whole_digits',
+                params={'max': (self.max_digits - self.decimal_places)},
+            )
         return value
