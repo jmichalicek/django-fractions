@@ -5,7 +5,18 @@ History
 
 Current
 +++++++++
-
+* add python 3.6 and django 1.11 to tox.ini - still a bit broken
+* convert to matrix for environments in .travis.yml
+  because tox only wants to test py3.6 when installed under 3.6
+  but will not test 3.5 when running with python 3.6 as the base.
+* Remove invalid ROOT_URLCONF from test django config
+  There is no urls.py for djfractions, don't tell it to use one.  Older
+  django versions were ok with this, but 1.11 is pickier about the correctness.
+* add current changes to HISTORY.rst
+* Adjust SILENCED_SYSTEM_CHECKS setting during tests
+  Django 1.11 is stricter about system checks and will not even run
+  the tests where there are some errors we specifically test for due
+  to older django versions letting you make these mistakes.
 
 1.0.0 (2016.12-31)
 ++++++++++++++++++
