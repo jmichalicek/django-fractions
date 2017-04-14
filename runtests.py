@@ -5,6 +5,15 @@ try:
     from django.test.utils import get_runner
 
     settings.configure(
+        # Disable some system checks during tests for now
+        # Django 1.11 appears to have gotten more strict about these
+        # and now tests do not run, but since some older, supported
+        # versions do not enforce them with the systemcheck system
+        # there are tests which specifically make these mistakes and ensure
+        # that the correct exceptions are raised.
+        # fields.E130 = must define decimal_places
+        # fields.E132 = must define max_digits
+        SILENCED_SYSTEM_CHECKS = ['fields.E130', 'fields.E132'],
         DEBUG=True,
         USE_TZ=True,
         DATABASES={
@@ -12,7 +21,6 @@ try:
                 "ENGINE": "django.db.backends.sqlite3",
             }
         },
-        ROOT_URLCONF="djfractions.urls",
         INSTALLED_APPS=[
             "django.contrib.auth",
             "django.contrib.contenttypes",
