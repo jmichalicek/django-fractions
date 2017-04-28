@@ -61,7 +61,8 @@ ________________________________________
 .. code-block:: python
 
     DecimalFractionField(max_value=None, min_value=None,
-                         coerce_thirds=True, limit_denominator=None, use_mixed_numbers=True)
+                         coerce_thirds=True, limit_denominator=None,
+                         use_mixed_numbers=True, max_digits=None, decimal_places=None)
 
 Returns a :class:`decimal.Decimal` instance.  Takes a string formatted
 as a fraction such as 1/4, 1 1/4, 1-1/4, 1 and 1/4, or -1/4 as input in a form.
