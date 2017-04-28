@@ -17,6 +17,10 @@ Current
   Django 1.11 is stricter about system checks and will not even run
   the tests where there are some errors we specifically test for due
   to older django versions letting you make these mistakes.
+* Added optional max_digits and decimal_places parameters to
+  forms.DecimalFractionField so that returned Decimal objects have the
+  desired max_digits and decimal_places when not directly tied to a
+  models.DecimalField() on a ModelForm
 
 1.0.0 (2016.12-31)
 ++++++++++++++++++
