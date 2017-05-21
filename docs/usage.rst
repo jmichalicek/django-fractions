@@ -49,6 +49,12 @@ ________________________________________
 Returns a :class:`fractions.Fraction` instance.  Takes a string formatted
 as a fraction such as 1/4, 1 1/4, 1-1/4, 1 and 1/4, or -1/4 as input in a form.
 
+:param Decimal max_value: The maximum value allowed for this field
+:param Decimal min_value: The minimum value allowed for this field
+:param int limit_denominator:  Limits the fraction's denominator to this value if it is set.
+:param bool coerce_thirds: If True, then when values which appear to be Decimal values which started as 1/3 or 2/3 will be forced back to 1/3 or 2/3 when retrieved from the database.
+:param bool use_mixed_numbers: If True initial values which are decimals and floats greater than 1 will be converted to a mixed number such as `1 1/2` in the form field's value.  If False then improper fractions such as `3/2` will be created. Defaults to True.
+
 Example::
 
   from django import forms
@@ -57,11 +63,6 @@ Example::
   class MyForm(forms.Form):
       a_fraction = FractionField()
 
-:param Decimal max_value: The maximum value allowed for this field
-:param Decimal min_value: The minimum value allowed for this field
-:param int limit_denominator:  Limits the fraction's denominator to this value if it is set.
-:param bool coerce_thirds: If True, then when values which appear to be Decimal values which started as 1/3 or 2/3 will be forced back to 1/3 or 2/3 when retrieved from the database.
-:param bool use_mixed_numbers: If True initial values which are decimals and floats greater than 1 will be converted to a mixed number such as `1 1/2` in the form field's value.  If False then improper fractions such as `3/2` will be created. Defaults to True. 
 
 DecimalFractionField
 ________________________________________
