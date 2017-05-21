@@ -40,8 +40,11 @@ ________________________________________
 
 .. code-block:: python
 
-    FractionField(max_value=None, min_value=None,
-                  coerce_thirds=True, limit_denominator=None, use_mixed_numbers=True)
+    FractionField(max_value=None,
+                  min_value=None,
+                  coerce_thirds=True,
+                  limit_denominator=None,
+                  use_mixed_numbers=True)
 
 Returns a :class:`fractions.Fraction` instance.  Takes a string formatted
 as a fraction such as 1/4, 1 1/4, 1-1/4, 1 and 1/4, or -1/4 as input in a form.
@@ -54,18 +57,36 @@ Example::
   class MyForm(forms.Form):
       a_fraction = FractionField()
 
+:param Decimal max_value: The maximum value allowed for this field
+:param Decimal min_value: The minimum value allowed for this field
+:param int limit_denominator:  Limits the fraction's denominator to this value if it is set.
+:param bool coerce_thirds: If True, then when values which appear to be Decimal values which started as 1/3 or 2/3 will be forced back to 1/3 or 2/3 when retrieved from the database.
+:param bool use_mixed_numbers: If True initial values which are decimals and floats greater than 1 will be converted to a mixed number such as `1 1/2` in the form field's value.  If False then improper fractions such as `3/2` will be created. Defaults to True. 
 
 DecimalFractionField
 ________________________________________
 
 .. code-block:: python
 
-    DecimalFractionField(max_value=None, min_value=None,
-                         coerce_thirds=True, limit_denominator=None,
-                         use_mixed_numbers=True, max_digits=None, decimal_places=None)
+    DecimalFractionField(max_value=None,
+                         min_value=None,
+                         coerce_thirds=True,
+                         limit_denominator=None,
+                         use_mixed_numbers=True,
+                         max_digits=None,
+                         decimal_places=None)
 
 Returns a :class:`decimal.Decimal` instance.  Takes a string formatted
 as a fraction such as 1/4, 1 1/4, 1-1/4, 1 and 1/4, or -1/4 as input in a form.
+
+:param bool coerce_thirds: Defaults to True.  If True then .3 repeating is forced to 1/3 rather than 3/10, 33/100, etc. and .66 and .67 are forced to 2/3.
+:param int limit_denominator: Set a maximum denominator to be used on fractions created from the field input.
+:param bool use_mixed_numbers: If True initial values which are decimals and floats greater than 1 will be converted to a mixed number such as `1 1/2` in the form field's value.  If False then improper fractions such as `3/2` will be created. Defaults to True.
+:param max_value: The maximum value allowed
+:param min_value: The minimum value allowed
+:param int decimal_places: The maximum number of decimal places the resulting Decimal value may have
+:param int max_digits: The maximum number of digits, including decimal places, the resulting Decimal may have.
+
 
 Example::
 
