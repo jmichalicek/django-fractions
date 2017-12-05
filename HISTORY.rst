@@ -5,6 +5,10 @@ History
 
 Current
 +++++++++
+* Stopped testing against Django 1.9 and 1.10.  They are no longer supported by the Django team.
+
+1.1.0 (2017-06-04)
+++++++++++++++++++
 * add python 3.6 and django 1.11 to tox.ini - still a bit broken
 * convert to matrix for environments in .travis.yml
   because tox only wants to test py3.6 when installed under 3.6
@@ -21,9 +25,8 @@ Current
   forms.DecimalFractionField so that returned Decimal objects have the
   desired max_digits and decimal_places when not directly tied to a
   models.DecimalField() on a ModelForm
-* Stopped testing against Django 1.9 and 1.10.  They are no longer supported by the Django team.
 
-1.0.0 (2016.12-31)
+1.0.0 (2016-12-31)
 ++++++++++++++++++
 * Stop subclassing Django's DecimalField and duplicate small amounts of code
   as necessary for db backend compatibility.  Too many things need to be
