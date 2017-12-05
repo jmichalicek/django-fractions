@@ -21,6 +21,7 @@ Current
   forms.DecimalFractionField so that returned Decimal objects have the
   desired max_digits and decimal_places when not directly tied to a
   models.DecimalField() on a ModelForm
+* Stopped testing against Django 1.9 and 1.10.  They are no longer supported by the Django team.
 
 1.0.0 (2016.12-31)
 ++++++++++++++++++
