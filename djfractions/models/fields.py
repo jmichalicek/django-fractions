@@ -27,14 +27,14 @@ class DecimalFractionField(Field):
     }
     description = _("Fraction number stored in the database as a Decimal")
 
-    def __init__(self, verbose_name=None, name=None, max_digits=None,
+    def __init__(self, verbose_name=None, name=None, max_digits=None, blank=False, null=False,
                  decimal_places=None, limit_denominator=None, coerce_thirds=True,
                  **kwargs):
         self.limit_denominator = limit_denominator
         self.coerce_thirds = coerce_thirds
 
         # for decimal stuff
-        self.max_digits, self.decimal_places = max_digits, decimal_places
+        self.max_digits, self.decimal_places, self.blank, self.null = max_digits, decimal_places, blank, null
 
         super(DecimalFractionField, self).__init__(verbose_name=verbose_name,
                                                    name=name,
