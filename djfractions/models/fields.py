@@ -38,6 +38,8 @@ class DecimalFractionField(Field):
 
         super(DecimalFractionField, self).__init__(verbose_name=verbose_name,
                                                    name=name,
+                                                   blank=blank,
+                                                   null=null,
                                                    **kwargs)
 
     def check(self, **kwargs):
