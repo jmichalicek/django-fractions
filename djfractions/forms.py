@@ -212,7 +212,7 @@ class DecimalFractionField(FractionField):
         # these regexes should match fractions such as 1 1/4 and 1/4, with any number
         # of spaces between digits and / and any length of actual digits such as
         # 100 1/4 or 1 100/400, etc
-        if isinstance(value, str):
+        if isinstance(value, SIX_OR_STR):
             if not is_number(value) and not self.FRACTION_MATCH.match(value) \
                and not self.MIXED_NUMBER_MATCH.match(value):
                 # this second matches optional whitespace, then a digit, then
