@@ -1,7 +1,5 @@
-from __future__ import unicode_literals, absolute_import, division
-
-__version__ = '1.1.0'
-
+from __future__ import unicode_literals, division, absolute_import
+__version__ = '1.2.0'
 from decimal import Decimal
 import fractions
 import re

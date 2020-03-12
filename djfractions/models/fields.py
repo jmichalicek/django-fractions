@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
-
 from __future__ import unicode_literals, division, absolute_import, print_function
+import django
+if django.VERSION[0] < 3:
+	from django.utils import six
+	SIX_OR_STR = six.string_types
+else:
+	SIX_OR_STR = str
 
 from django.core import checks
 from django.db import connection
 from django.db.models import DecimalField, Field
-from django.utils import six
 from django.utils.translation import ugettext_lazy as _
 
 import decimal
@@ -30,17 +34,19 @@ class DecimalFractionField(Field):
     }
     description = _("Fraction number stored in the database as a Decimal")
 
-    def __init__(self, verbose_name=None, name=None, max_digits=None,
+    def __init__(self, verbose_name=None, name=None, max_digits=None, blank=False, null=False,
                  decimal_places=None, limit_denominator=None, coerce_thirds=True,
                  **kwargs):
         self.limit_denominator = limit_denominator
         self.coerce_thirds = coerce_thirds
 
         # for decimal stuff
-        self.max_digits, self.decimal_places = max_digits, decimal_places
+        self.max_digits, self.decimal_places, self.blank, self.null = max_digits, decimal_places, blank, null
 
         super(DecimalFractionField, self).__init__(verbose_name=verbose_name,
                                                    name=name,
+                                                   blank=blank,
+                                                   null=null,
                                                    **kwargs)
 
     def check(self, **kwargs):
@@ -113,14 +119,25 @@ class DecimalFractionField(Field):
             ]
         return []
 
-    def from_db_value(self, value, expression, connection, context):
-        if value is None:
-            return value
+	# If running pre-django 3.0 use context, depricated in 3.0
+    if django.VERSION[0] < 3:
+        def from_db_value(self, value, expression, connection, context):
+            if value is None:
+                return value
 
-        # this probably needs to call to_fraction()
-        # cann it just call to_python() for now?
-        #return fractions.Fraction(value)
-        return self.to_python(value)
+            # this probably needs to call to_fraction()
+            # cann it just call to_python() for now?
+            #return fractions.Fraction(value)
+            return self.to_python(value)
+    else:
+        def from_db_value(self, value, expression, connection):
+            if value is None:
+                return value
+
+            # this probably needs to call to_fraction()
+            # cann it just call to_python() for now?
+            #return fractions.Fraction(value)
+            return self.to_python(value)
 
     def get_db_prep_save(self, value, connection):
         # for django 1.9 the following will need used.
@@ -193,7 +210,7 @@ class DecimalFractionField(Field):
         return "DecimalField"
 
     def _format(self, value):
-        if isinstance(value, six.string_types):
+        if isinstance(value, SIX_OR_STR):
             return value
         else:
             return self.format_number(value)
