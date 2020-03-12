@@ -119,14 +119,25 @@ class DecimalFractionField(Field):
             ]
         return []
 
-    def from_db_value(self, value, expression, connection, context=None):
-        if value is None:
-            return value
+	# If running pre-django 3.0 use context, depricated in 3.0
+    if django.VERSION[0] < 3:
+        def from_db_value(self, value, expression, connection, context):
+            if value is None:
+                return value
 
-        # this probably needs to call to_fraction()
-        # cann it just call to_python() for now?
-        #return fractions.Fraction(value)
-        return self.to_python(value)
+            # this probably needs to call to_fraction()
+            # cann it just call to_python() for now?
+            #return fractions.Fraction(value)
+            return self.to_python(value)
+    else:
+        def from_db_value(self, value, expression, connection):
+            if value is None:
+                return value
+
+            # this probably needs to call to_fraction()
+            # cann it just call to_python() for now?
+            #return fractions.Fraction(value)
+            return self.to_python(value)
 
     def get_db_prep_save(self, value, connection):
         # for django 1.9 the following will need used.
