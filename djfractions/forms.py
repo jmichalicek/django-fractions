@@ -1,9 +1,7 @@
-from __future__ import unicode_literals, absolute_import, division, print_function
 
 from django import forms
 from django.core.exceptions import ValidationError
 from django.core import validators
-from django.utils import six
 from django.utils.translation import ugettext_lazy as _, ungettext_lazy
 
 from decimal import Decimal, InvalidOperation
@@ -95,7 +93,7 @@ class FractionField(forms.Field):
         if value in validators.EMPTY_VALUES:
             return None
 
-        if isinstance(value, six.string_types):
+        if isinstance(value, str):
             # some really lame validation that we do not have a string like "1 1 1/4" because that
             # is not a valid number.
             # these regexes should match fractions such as 1 1/4 and 1/4, with any number
@@ -207,7 +205,7 @@ class DecimalFractionField(FractionField):
         # these regexes should match fractions such as 1 1/4 and 1/4, with any number
         # of spaces between digits and / and any length of actual digits such as
         # 100 1/4 or 1 100/400, etc
-        if isinstance(value, six.string_types):
+        if isinstance(value, str):
             if not is_number(value) and not self.FRACTION_MATCH.match(value) \
                and not self.MIXED_NUMBER_MATCH.match(value):
                 # this second matches optional whitespace, then a digit, then
