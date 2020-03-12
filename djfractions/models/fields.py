@@ -110,7 +110,7 @@ class DecimalFractionField(Field):
             ]
         return []
 
-    def from_db_value(self, value, expression, connection, context):
+    def from_db_value(self, value, expression, connection, context=None):
         if value is None:
             return value
 
