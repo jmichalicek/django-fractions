@@ -1,3 +1,10 @@
+from __future__ import unicode_literals, division, absolute_import, print_function
+import django
+if django.VERSION[0] < 3:
+	from django.utils import six
+	SIX_OR_STR = six.string_types
+else:
+	SIX_OR_STR = str
 
 from django import forms
 from django.core.exceptions import ValidationError
@@ -93,7 +100,7 @@ class FractionField(forms.Field):
         if value in validators.EMPTY_VALUES:
             return None
 
-        if isinstance(value, str):
+        if isinstance(value, SIX_OR_STR):
             # some really lame validation that we do not have a string like "1 1 1/4" because that
             # is not a valid number.
             # these regexes should match fractions such as 1 1/4 and 1/4, with any number

@@ -1,4 +1,11 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals, division, absolute_import, print_function
+import django
+if django.VERSION[0] < 3:
+	from django.utils import six
+	SIX_OR_STR = six.string_types
+else:
+	SIX_OR_STR = str
 
 from django.core import checks
 from django.db import connection
@@ -192,7 +199,7 @@ class DecimalFractionField(Field):
         return "DecimalField"
 
     def _format(self, value):
-        if isinstance(value, str):
+        if isinstance(value, SIX_OR_STR):
             return value
         else:
             return self.format_number(value)
