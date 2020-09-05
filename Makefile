@@ -1,55 +1,23 @@
-.PHONY: clean-pyc clean-build docs
+.PHONY: requirements.txt
 
-help:
-	@echo "clean-build - remove build artifacts"
-	@echo "clean-pyc - remove Python file artifacts"
-	@echo "lint - check style with flake8"
-	@echo "test - run tests quickly with the default Python"
-	@echo "test-all - run tests on every Python version with tox"
-	@echo "coverage - check code coverage quickly with the default Python"
-	@echo "docs - generate Sphinx HTML documentation, including API docs"
-	@echo "release - package and upload a release"
-	@echo "sdist - package"
+setup-and-run:	setup migrate run
 
-clean: clean-build clean-pyc
+venv:
+	 python -m venv .venv
 
-clean-build:
-	rm -fr build/
-	rm -fr dist/
-	rm -fr *.egg-info
+run:
+	python manage.py runserver 0.0.0.0:8000
 
-clean-pyc:
-	find . -name '*.pyc' -exec rm -f {} +
-	find . -name '*.pyo' -exec rm -f {} +
-	find . -name '*~' -exec rm -f {} +
+migrate:
+	python manage.py migrate
 
-lint:
-	flake8 djfractions tests
+dev:
+	docker-compose run --service-ports django //bin/bash
 
-test:
-	python runtests.py tests
+install-frac:
+	pip install -e /django/bash-shell.net --no-binary :all:
 
-test-all:
-	tox
-
-coverage:
-	coverage run --source djfractions runtests.py tests
-	coverage report -m
-	coverage html
-	open htmlcov/index.html
-
-docs:
-	rm -f docs/django-fractions.rst
-	rm -f docs/modules.rst
-	sphinx-apidoc -o docs/ djfractions
-	$(MAKE) -C docs clean
-	$(MAKE) -C docs html
-	open docs/_build/html/index.html
-
-release: clean
-	python setup.py sdist upload
-	python setup.py bdist_wheel upload
-
-sdist: clean
-	python setup.py sdist
-	ls -l dist
+# requirements.txt:
+# 	# See https://stackoverflow.com/questions/58843905/what-is-the-proper-way-to-decide-whether-to-allow-unsafe-package-versions-in-pip
+# 	# about allow-unsafe. In this case, to pin setuptools.
+# 	pip-compile requirements.in --generate-hashes --upgrade --allow-unsafe

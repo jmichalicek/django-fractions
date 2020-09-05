@@ -8,6 +8,8 @@ from django.db.models import DecimalField, Field
 from django.utils import six
 from django.utils.translation import ugettext_lazy as _
 
+from django.utils.functional import Promise, cached_property
+
 import decimal
 import fractions
 import logging
@@ -15,6 +17,7 @@ import logging
 from .. import coerce_to_thirds
 from .. import forms as fraction_forms
 
+from django.db.models import DecimalField
 
 logger = logging.getLogger(__name__)
 
@@ -24,24 +27,34 @@ class DecimalFractionField(Field):
     Field which stores values as a Decimal value, but uses
     :class:`fractions.Fraction` for its value
     """
+
     empty_strings_allowed = False
     default_error_messages = {
         'invalid': _("'%(value)s' value must be a fraction number."),
     }
     description = _("Fraction number stored in the database as a Decimal")
 
-    def __init__(self, verbose_name=None, name=None, max_digits=None,
-                 decimal_places=None, limit_denominator=None, coerce_thirds=True,
-                 **kwargs):
+    def __init__(
+        self,
+        verbose_name=None,
+        name=None,
+        max_digits=None,
+        decimal_places=None,
+        limit_denominator=None,
+        coerce_thirds=True,
+        **kwargs
+    ):
         self.limit_denominator = limit_denominator
         self.coerce_thirds = coerce_thirds
 
         # for decimal stuff
         self.max_digits, self.decimal_places = max_digits, decimal_places
+        super(DecimalFractionField, self).__init__(verbose_name=verbose_name, name=name, **kwargs)
 
-        super(DecimalFractionField, self).__init__(verbose_name=verbose_name,
-                                                   name=name,
-                                                   **kwargs)
+    @cached_property
+    def context(self):
+        # TODO: understand what this is and why it now exists and when and why it got added
+        return decimal.Context(prec=self.max_digits)
 
     def check(self, **kwargs):
         errors = super(DecimalFractionField, self).check(**kwargs)
@@ -62,19 +75,11 @@ class DecimalFractionField(Field):
         except TypeError:
             return [
                 checks.Error(
-                    "DecimalFractionFields must define a 'decimal_places' attribute.",
-                    obj=self,
-                    id='fields.E130',
+                    "DecimalFractionFields must define a 'decimal_places' attribute.", obj=self, id='fields.E130',
                 )
             ]
         except ValueError:
-            return [
-                checks.Error(
-                    "'decimal_places' must be a non-negative integer.",
-                    obj=self,
-                    id='fields.E131',
-                )
-            ]
+            return [checks.Error("'decimal_places' must be a non-negative integer.", obj=self, id='fields.E131',)]
         else:
             return []
 
@@ -85,31 +90,17 @@ class DecimalFractionField(Field):
                 raise ValueError()
         except TypeError:
             return [
-                checks.Error(
-                    "DecimalFractionFields must define a 'max_digits' attribute.",
-                    obj=self,
-                    id='fields.E132',
-                )
+                checks.Error("DecimalFractionFields must define a 'max_digits' attribute.", obj=self, id='fields.E132',)
             ]
         except ValueError:
-            return [
-                checks.Error(
-                    "'max_digits' must be a positive integer.",
-                    obj=self,
-                    id='fields.E133',
-                )
-            ]
+            return [checks.Error("'max_digits' must be a positive integer.", obj=self, id='fields.E133',)]
         else:
             return []
 
     def _check_decimal_places_and_max_digits(self, **kwargs):
         if int(self.decimal_places) > int(self.max_digits):
             return [
-                checks.Error(
-                    "'max_digits' must be greater or equal to 'decimal_places'.",
-                    obj=self,
-                    id='fields.E134',
-                )
+                checks.Error("'max_digits' must be greater or equal to 'decimal_places'.", obj=self, id='fields.E134',)
             ]
         return []
 
@@ -119,17 +110,18 @@ class DecimalFractionField(Field):
 
         # this probably needs to call to_fraction()
         # cann it just call to_python() for now?
-        #return fractions.Fraction(value)
+        # return fractions.Fraction(value)
         return self.to_python(value)
 
     def get_db_prep_save(self, value, connection):
+        # return connection.ops.adapt_decimalfield_value(self.to_python(value), self.max_digits, self.decimal_places)
         # for django 1.9 the following will need used.
         if hasattr(connection.ops, 'adapt_decimalfield_value'):
-            return connection.ops.adapt_decimalfield_value(self.get_prep_value(value),
-                                                           self.max_digits, self.decimal_places)
+            return connection.ops.adapt_decimalfield_value(
+                self.get_prep_value(value), self.max_digits, self.decimal_places
+            )
         else:
-            return connection.ops.value_to_db_decimal(self.get_prep_value(value),
-                                                      self.max_digits, self.decimal_places)
+            return connection.ops.value_to_db_decimal(self.get_prep_value(value), self.max_digits, self.decimal_places)
 
     def to_python(self, value):
         if value is None:
@@ -180,10 +172,17 @@ class DecimalFractionField(Field):
         return name, path, args, kwargs
 
     def formfield(self, **kwargs):
-        defaults ={
-            'form_class': fraction_forms.FractionField
+        defaults = {
+            'form_class': fraction_forms.FractionField,
         }
         defaults.update(kwargs)
+
+        # return super().formfield(**{
+        #     'max_digits': self.max_digits,
+        #     'decimal_places': self.decimal_places,
+        #     'form_class': forms.DecimalField,
+        #     **kwargs,
+        # })
         return super(DecimalFractionField, self).formfield(**defaults)
 
     def get_internal_type(self):
@@ -210,5 +209,5 @@ class DecimalFractionField(Field):
         # backwards-compatibility with any external code which may have used
         # this method.
         from django.db.backends import utils
-        return utils.format_number(value, self.max_digits, self.decimal_places)
 
+        return utils.format_number(value, self.max_digits, self.decimal_places)
