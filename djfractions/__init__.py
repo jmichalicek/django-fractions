@@ -1,4 +1,4 @@
-__version__ = '1.1.0'
+__version__ = '2.0.0'
 
 from decimal import Decimal
 import fractions
