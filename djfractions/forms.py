@@ -1,9 +1,6 @@
-from __future__ import unicode_literals, absolute_import, division, print_function
-
 from django import forms
 from django.core.exceptions import ValidationError
 from django.core import validators
-from django.utils import six
 from django.utils.translation import ugettext_lazy as _, ungettext_lazy
 
 from decimal import Decimal, InvalidOperation
@@ -11,8 +8,7 @@ import fractions
 import numbers
 import re
 
-from . import (quantity_to_decimal, is_number, get_fraction_parts,
-               coerce_to_thirds, quantity_to_fraction)
+from . import quantity_to_decimal, is_number, get_fraction_parts, coerce_to_thirds, quantity_to_fraction
 
 
 class FractionField(forms.Field):
@@ -44,14 +40,22 @@ class FractionField(forms.Field):
     # separators of - (hyphen) and the word 'and' between the whole number and fraction part
     MIXED_NUMBER_MATCH = re.compile(r'^\s*-?\s*\d+(\s+|\s+and\s+|\s*\-\s*)\d+\s*\/\s*\d+\s*$')
 
-    def __init__(self, max_value=None, min_value=None, limit_denominator=None,
-                 coerce_thirds=True, use_mixed_numbers=True, *args, **kwargs):
+    def __init__(
+        self,
+        max_value=None,
+        min_value=None,
+        limit_denominator=None,
+        coerce_thirds=True,
+        use_mixed_numbers=True,
+        *args,
+        **kwargs
+    ):
         self.coerce_thirds = coerce_thirds
         self.limit_denominator = limit_denominator
         self.use_mixed_numbers = use_mixed_numbers
         self.max_value, self.min_value = max_value, min_value
 
-        super(FractionField, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if max_value is not None:
             self.validators.append(validators.MaxValueValidator(max_value))
         if min_value is not None:
@@ -62,16 +66,14 @@ class FractionField(forms.Field):
             return value
 
         try:
-            whole_number, numerator, denominator = get_fraction_parts(value,
-                                                                      self.use_mixed_numbers,
-                                                                      self.limit_denominator,
-                                                                      self.coerce_thirds)
+            whole_number, numerator, denominator = get_fraction_parts(
+                value, self.use_mixed_numbers, self.limit_denominator, self.coerce_thirds
+            )
 
             # if we are allowing mixed numbers (so non-fractional values,
             # including whole numbers) and numerator is falsey (should be 0)
             # just return the whole number.
-            if (whole_number or whole_number == 0) and not numerator \
-               and self.use_mixed_numbers:
+            if (whole_number or whole_number == 0) and not numerator and self.use_mixed_numbers:
                 return u'%s' % whole_number
 
             if whole_number and self.use_mixed_numbers:
@@ -79,8 +81,7 @@ class FractionField(forms.Field):
             else:
                 fraction_string = u''
 
-            fraction_string = u'%s %d/%d' % \
-                              (fraction_string, numerator, denominator)
+            fraction_string = u'%s %d/%d' % (fraction_string, numerator, denominator)
 
         except (ValueError, InvalidOperation) as e:
             fraction_string = u'%s' % value
@@ -95,14 +96,17 @@ class FractionField(forms.Field):
         if value in validators.EMPTY_VALUES:
             return None
 
-        if isinstance(value, six.string_types):
+        if isinstance(value, str):
             # some really lame validation that we do not have a string like "1 1 1/4" because that
             # is not a valid number.
             # these regexes should match fractions such as 1 1/4 and 1/4, with any number
             # of spaces between digits and / and any length of actual digits such as
             # 100 1/4 or 1 100/400, etc
-            if not is_number(value) and not self.FRACTION_MATCH.match(value) \
-               and not self.MIXED_NUMBER_MATCH.match(value):
+            if (
+                not is_number(value)
+                and not self.FRACTION_MATCH.match(value)
+                and not self.MIXED_NUMBER_MATCH.match(value)
+            ):
                 # this second matches optional whitespace, then a digit, then
                 # whitespace OR the word 'and' with or without spaces OR a hyphen with
                 # or without surrounding spaces, followed by another digit, a /, then a digit
@@ -155,19 +159,21 @@ class DecimalFractionField(FractionField):
         'max_digits': ungettext_lazy(
             'Ensure that there are no more than %(max)s digit in total.',
             'Ensure that there are no more than %(max)s digits in total.',
-            'max'),
+            'max',
+        ),
         'max_decimal_places': ungettext_lazy(
             'Ensure that there are no more than %(max)s decimal place.',
             'Ensure that there are no more than %(max)s decimal places.',
-            'max'),
+            'max',
+        ),
         'max_whole_digits': ungettext_lazy(
             'Ensure that there are no more than %(max)s digit before the decimal point.',
             'Ensure that there are no more than %(max)s digits before the decimal point.',
-            'max'),
+            'max',
+        ),
     }
 
-    
-    #def __init__(self, max_value=None, min_value=None, limit_denominator=None,
+    # def __init__(self, max_value=None, min_value=None, limit_denominator=None,
     #             coerce_thirds=True, use_mixed_numbers=True, *args, **kwargs):
     #    self.coerce_thirds = coerce_thirds
     #    self.limit_denominator = limit_denominator
@@ -179,9 +185,16 @@ class DecimalFractionField(FractionField):
     #            limit_denominator=limit_denominator, coerce_thirds=coerce_thirds,
     #            use_mixed_numbers=use_mixed_numbers, *args, **kwargs)
 
-
-    def __init__(self, max_value=None, min_value=None, limit_denominator=None,
-                 coerce_thirds=True, use_mixed_numbers=True, *args, **kwargs):
+    def __init__(
+        self,
+        max_value=None,
+        min_value=None,
+        limit_denominator=None,
+        coerce_thirds=True,
+        use_mixed_numbers=True,
+        *args,
+        **kwargs
+    ):
         self.use_mixed_numbers = use_mixed_numbers
         self.max_value, self.min_value = max_value, min_value
 
@@ -189,8 +202,7 @@ class DecimalFractionField(FractionField):
         self.max_digits = kwargs.pop('max_digits', None)
         self.round_decimal = kwargs.pop('round_decimal', False)
 
-        super(DecimalFractionField, self).__init__(*args, **kwargs)
-
+        super().__init__(*args, **kwargs)
 
     def to_python(self, value):
         """
@@ -207,9 +219,12 @@ class DecimalFractionField(FractionField):
         # these regexes should match fractions such as 1 1/4 and 1/4, with any number
         # of spaces between digits and / and any length of actual digits such as
         # 100 1/4 or 1 100/400, etc
-        if isinstance(value, six.string_types):
-            if not is_number(value) and not self.FRACTION_MATCH.match(value) \
-               and not self.MIXED_NUMBER_MATCH.match(value):
+        if isinstance(value, str):
+            if (
+                not is_number(value)
+                and not self.FRACTION_MATCH.match(value)
+                and not self.MIXED_NUMBER_MATCH.match(value)
+            ):
                 # this second matches optional whitespace, then a digit, then
                 # whitespace OR the word 'and' with or without spaces OR a hyphen with
                 # or without surrounding spaces, followed by another digit, a /, then a digit
@@ -225,10 +240,10 @@ class DecimalFractionField(FractionField):
 
         return value
 
-    #def clean(self, value):
+    # def clean(self, value):
     #    if self.max_digits is not None and self.decimal_places is not None and self.round_decimal:
     #        value = self.round_decimal_value(value)
-    #    return super(DecimalFractionField, self).clean(value) 
+    #    return super(DecimalFractionField, self).clean(value)
 
     def round_decimal_value(self, value):
         # NOT SURE THIS IS A GOOD IDEA
@@ -265,7 +280,7 @@ class DecimalFractionField(FractionField):
             # if no decimal places can be used to reac max_digits then
             # use no leading decimal, causing Decimal.quantize() to round to
             # a whole number
-            quantize_string = u'.%s' % quantize_string 
+            quantize_string = u'.%s' % quantize_string
         value = value.quantize(Decimal(quantize_string))
         return value
 
@@ -282,7 +297,7 @@ class DecimalFractionField(FractionField):
         return (digits, whole_digits, decimals)
 
     def validate(self, value):
-        super(DecimalFractionField, self).validate(value)
+        super().validate(value)
         if value in self.empty_values:
             return
         # Check for NaN, Inf and -Inf values. We can't compare directly for NaN,
@@ -308,9 +323,7 @@ class DecimalFractionField(FractionField):
 
         if self.max_digits is not None and digits > self.max_digits:
             raise ValidationError(
-                self.error_messages['max_digits'],
-                code='max_digits',
-                params={'max': self.max_digits},
+                self.error_messages['max_digits'], code='max_digits', params={'max': self.max_digits},
             )
         if self.decimal_places is not None and decimals > self.decimal_places:
             raise ValidationError(
@@ -318,8 +331,11 @@ class DecimalFractionField(FractionField):
                 code='max_decimal_places',
                 params={'max': self.decimal_places},
             )
-        if (self.max_digits is not None and self.decimal_places is not None
-                and whole_digits > (self.max_digits - self.decimal_places)):
+        if (
+            self.max_digits is not None
+            and self.decimal_places is not None
+            and whole_digits > (self.max_digits - self.decimal_places)
+        ):
             raise ValidationError(
                 self.error_messages['max_whole_digits'],
                 code='max_whole_digits',

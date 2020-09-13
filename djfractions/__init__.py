@@ -1,5 +1,3 @@
-from __future__ import unicode_literals, absolute_import, division
-
 __version__ = '1.1.0'
 
 from decimal import Decimal
@@ -8,14 +6,31 @@ import re
 
 
 __all__ = [
-    'quantity_to_decimal', 'is_number', 'is_fraction',
-    'get_fraction_parts', 'get_fraction_unicode_entity',
+    'quantity_to_decimal',
+    'is_number',
+    'is_fraction',
+    'get_fraction_parts',
+    'get_fraction_unicode_entity',
 ]
 
 HTML_ENTITIES = [
-    '&frac12;', '&frac13;', '&frac23;', '&frac14;', '&frac34;', '&frac15;',
-    '&frac25;', '&frac35;', '&frac45;', '&frac16;', '&frac56;', '&frac17;',
-    '&frac18;', '&frac38;', '&frac58;', '&frac78;',]
+    '&frac12;',
+    '&frac13;',
+    '&frac23;',
+    '&frac14;',
+    '&frac34;',
+    '&frac15;',
+    '&frac25;',
+    '&frac35;',
+    '&frac45;',
+    '&frac16;',
+    '&frac56;',
+    '&frac17;',
+    '&frac18;',
+    '&frac38;',
+    '&frac58;',
+    '&frac78;',
+]
 
 
 def is_number(s):
@@ -57,8 +72,12 @@ def coerce_to_thirds(value):
     then back to a fraction.
     """
     temp_decimal = Decimal(value.numerator / value.denominator).quantize(Decimal('0.00'))
-    if temp_decimal % 1 == Decimal('.33') or temp_decimal % 1 == Decimal('.3') \
-       or temp_decimal % 1 == Decimal('.67') or temp_decimal % 1 == Decimal('.6'):
+    if (
+        temp_decimal % 1 == Decimal('.33')
+        or temp_decimal % 1 == Decimal('.3')
+        or temp_decimal % 1 == Decimal('.67')
+        or temp_decimal % 1 == Decimal('.6')
+    ):
         value = value.limit_denominator(3)
     return value
 
@@ -161,8 +180,7 @@ def _fraction_string_to_decimal(fraction):
     return Decimal(numerator / denominator)
 
 
-def get_fraction_parts(value, allow_mixed_numbers=True,
-                       limit_denominator=None, coerce_thirds=True):
+def get_fraction_parts(value, allow_mixed_numbers=True, limit_denominator=None, coerce_thirds=True):
     """
     Takes an `int`, `float`, or :class:`decimal.Decimal` and returns
     a tuple of (whole_number, numerator, denominator).  If allow_mixed_numbers
@@ -187,9 +205,9 @@ def get_fraction_parts(value, allow_mixed_numbers=True,
     whole_number = 0
     if allow_mixed_numbers and f.numerator >= f.denominator:
         # convert to complex number
-        #whole_number = f.numerator // f.denominator
+        # whole_number = f.numerator // f.denominator
         whole_number, numerator = divmod(f.numerator, f.denominator)
-        #f = fractions.Fraction(f.numerator - (whole_number * f.denominator), f.denominator)
+        # f = fractions.Fraction(f.numerator - (whole_number * f.denominator), f.denominator)
         f = fractions.Fraction(numerator, f.denominator)
 
     if limit_denominator:

@@ -1,5 +1,3 @@
-from __future__ import print_function, division, absolute_import, unicode_literals
-
 from django.core import checks
 from django.db import models
 from django.test import TestCase
@@ -12,8 +10,8 @@ import djfractions.forms
 
 from .models import TestModel, BadTestModel
 
-class DecimalFractionFieldTest(TestCase):
 
+class DecimalFractionFieldTest(TestCase):
     def test_field(self):
         """
         Several tests to ensure that when you save and then retrieve
@@ -25,7 +23,8 @@ class DecimalFractionFieldTest(TestCase):
         seven_twelths = fractions.Fraction(7, 12)
 
         test_model = TestModel(
-            defaults=one_half, coerce_thirds_true=one_third, denominator_limited_to_ten=seven_twelths)
+            defaults=one_half, coerce_thirds_true=one_third, denominator_limited_to_ten=seven_twelths
+        )
         test_model.save()
         test_model.refresh_from_db()
 
@@ -40,8 +39,7 @@ class DecimalFractionFieldTest(TestCase):
         test_model.coerce_thirds_true = two_thirds
         test_model.save()
         test_model.refresh_from_db()
-        self.assertEqual(fractions.Fraction(3333333333, 10000000000),
-                         test_model.decimal_places_limited)
+        self.assertEqual(fractions.Fraction(3333333333, 10000000000), test_model.decimal_places_limited)
         self.assertEqual(two_thirds, test_model.coerce_thirds_true)
 
     def test_formfield_method_returns_correct_type(self):
@@ -59,11 +57,9 @@ class DecimalFractionFieldTest(TestCase):
         dff = BadTestModel._meta.get_field('missing_max_digits')
         errors = dff.check()
         self.assertEqual(
-                [checks.Error(
-                    "DecimalFractionFields must define a 'max_digits' attribute.",
-                    obj=dff,
-                    id='fields.E132')],
-                errors)
+            [checks.Error("DecimalFractionFields must define a 'max_digits' attribute.", obj=dff, id='fields.E132')],
+            errors,
+        )
 
     def test_decimal_places_arg_is_required(self):
         """
@@ -72,9 +68,10 @@ class DecimalFractionFieldTest(TestCase):
         dff = BadTestModel._meta.get_field('missing_decimal_places')
         errors = dff.check()
         self.assertEqual(
-                [checks.Error(
-                    "DecimalFractionFields must define a 'decimal_places' attribute.",
-                    obj=dff,
-                    id='fields.E130')],
-                errors)
-
+            [
+                checks.Error(
+                    "DecimalFractionFields must define a 'decimal_places' attribute.", obj=dff, id='fields.E130'
+                )
+            ],
+            errors,
+        )

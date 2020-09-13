@@ -5,7 +5,12 @@ History
 
 Current
 +++++++++
-* Stopped testing against Django 1.9 and 1.10.  They are no longer supported by the Django team.
+* Dropped support for Django 2.0 and lower
+* Dropped support for Python 3.4 and lower
+* Updated DecimalFractionField to work on Django 2+ where from_db_field() does not take a context argument
+  and where the field is expected to have a `context` attribute like DecimalField.
+* Cleared out a bunch of Python 2 compatibility code such as how calls to super() are made, usage of six, and
+  from __future__ imports.
 
 1.1.0 (2017-06-04)
 ++++++++++++++++++

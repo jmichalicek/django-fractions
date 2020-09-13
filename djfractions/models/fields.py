@@ -1,11 +1,7 @@
 # -*- coding: utf-8 -*-
-
-from __future__ import unicode_literals, division, absolute_import, print_function
-
 from django.core import checks
 from django.db import connection
 from django.db.models import DecimalField, Field
-from django.utils import six
 from django.utils.translation import ugettext_lazy as _
 
 from django.utils.functional import Promise, cached_property
@@ -49,7 +45,7 @@ class DecimalFractionField(Field):
 
         # for decimal stuff
         self.max_digits, self.decimal_places = max_digits, decimal_places
-        super(DecimalFractionField, self).__init__(verbose_name=verbose_name, name=name, **kwargs)
+        super().__init__(verbose_name=verbose_name, name=name, **kwargs)
 
     @cached_property
     def context(self):
@@ -57,7 +53,7 @@ class DecimalFractionField(Field):
         return decimal.Context(prec=self.max_digits)
 
     def check(self, **kwargs):
-        errors = super(DecimalFractionField, self).check(**kwargs)
+        errors = super().check(**kwargs)
 
         digits_errors = self._check_decimal_places()
         digits_errors.extend(self._check_max_digits())
@@ -104,13 +100,9 @@ class DecimalFractionField(Field):
             ]
         return []
 
-    def from_db_value(self, value, expression, connection, context):
-        if value is None:
-            return value
-
-        # this probably needs to call to_fraction()
-        # cann it just call to_python() for now?
-        # return fractions.Fraction(value)
+    def from_db_value(self, value, expression, connection, *args, **kwargs):
+        # uses *args and **kwargs to handle the `context` param which django 1.11 passes in but 2.x+ do not.
+        # Not sure if I even really need this anymore.
         return self.to_python(value)
 
     def get_db_prep_save(self, value, connection):
@@ -118,7 +110,7 @@ class DecimalFractionField(Field):
         # for django 1.9 the following will need used.
         if hasattr(connection.ops, 'adapt_decimalfield_value'):
             return connection.ops.adapt_decimalfield_value(
-                self.get_prep_value(value), self.max_digits, self.decimal_places
+                self.get_prep_value(value), self.max_digits, self.decimal_places,
             )
         else:
             return connection.ops.value_to_db_decimal(self.get_prep_value(value), self.max_digits, self.decimal_places)
@@ -158,7 +150,7 @@ class DecimalFractionField(Field):
         return fraction_value
 
     def deconstruct(self):
-        name, path, args, kwargs = super(DecimalFractionField, self).deconstruct()
+        name, path, args, kwargs = super().deconstruct()
         kwargs['limit_denominator'] = self.limit_denominator
         kwargs['coerce_thirds'] = self.coerce_thirds
 
@@ -183,7 +175,7 @@ class DecimalFractionField(Field):
         #     'form_class': forms.DecimalField,
         #     **kwargs,
         # })
-        return super(DecimalFractionField, self).formfield(**defaults)
+        return super().formfield(**defaults)
 
     def get_internal_type(self):
         # returning DecimalField, since we use the same backing column type as that
@@ -192,7 +184,7 @@ class DecimalFractionField(Field):
         return "DecimalField"
 
     def _format(self, value):
-        if isinstance(value, six.string_types):
+        if isinstance(value, str):
             return value
         else:
             return self.format_number(value)

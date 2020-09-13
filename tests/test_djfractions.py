@@ -1,4 +1,3 @@
-from __future__ import division, absolute_import, unicode_literals
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.template import Template, Context
@@ -26,26 +25,20 @@ class QuantityToDecimalTest(TestCase):
         self.assertEqual(Decimal('.3'), quantity_to_decimal('.3'))
 
     def test_simple_fraction(self):
-        self.assertEqual(Decimal('.25'),
-                         quantity_to_decimal('1/4').quantize(Decimal('0.00')))
-        self.assertEqual(Decimal('.5'),
-                         quantity_to_decimal('1/2').quantize(Decimal('0.0')))
-        self.assertEqual(Decimal('.3'),
-                         quantity_to_decimal('1/3').quantize(Decimal('0.0')))
-        self.assertEqual(Decimal('.67'),
-                         quantity_to_decimal('2/3').quantize(Decimal('0.00')))
+        self.assertEqual(Decimal('.25'), quantity_to_decimal('1/4').quantize(Decimal('0.00')))
+        self.assertEqual(Decimal('.5'), quantity_to_decimal('1/2').quantize(Decimal('0.0')))
+        self.assertEqual(Decimal('.3'), quantity_to_decimal('1/3').quantize(Decimal('0.0')))
+        self.assertEqual(Decimal('.67'), quantity_to_decimal('2/3').quantize(Decimal('0.00')))
 
     def test_mixed_number(self):
         self.assertEqual(Decimal('1.25'), quantity_to_decimal('1 1/4'))
-        self.assertEqual(Decimal('1.33'),
-                         quantity_to_decimal('1 1/3').quantize(Decimal('0.01')))
+        self.assertEqual(Decimal('1.33'), quantity_to_decimal('1 1/3').quantize(Decimal('0.01')))
         self.assertEqual(Decimal('1.25'), quantity_to_decimal('1 and 1/4'))
         self.assertEqual(Decimal('1.25'), quantity_to_decimal('1-1/4'))
 
     def test_mixed_number(self):
         self.assertEqual(Decimal('-1.25'), quantity_to_decimal('-1 1/4'))
-        self.assertEqual(Decimal('-1.33'),
-                         quantity_to_decimal('-1 1/3').quantize(Decimal('0.01')))
+        self.assertEqual(Decimal('-1.33'), quantity_to_decimal('-1 1/3').quantize(Decimal('0.01')))
         self.assertEqual(Decimal('-1.25'), quantity_to_decimal('-1 and 1/4'))
         self.assertEqual(Decimal('-1.25'), quantity_to_decimal('-1-1/4'))
 
@@ -82,16 +75,19 @@ class DisplayFractionTagTest(TestCase):
     """
 
     def setUp(self):
-        self.template = Template("""
+        self.template = Template(
+            """
         {% load fractions %}
         {% display_fraction frac %}
-        """)
+        """
+        )
 
-        self.all_params_template = Template("""
+        self.all_params_template = Template(
+            """
         {% load fractions %}
         {% display_fraction frac limit_denominator mixed_numbers coerce_thirds %}
-        """)
-
+        """
+        )
 
     def test_whole_number(self):
         c = Context({'frac': 1})
@@ -99,7 +95,7 @@ class DisplayFractionTagTest(TestCase):
         self.assertEqual(rendered.strip(), '1')
 
     def test_simple_fraction(self):
-        c = Context({'frac': .5})
+        c = Context({'frac': 0.5})
 
         rendered = self.template.render(c)
         self.assertEqual(rendered.strip(), '<sup>1</sup>&frasl;<sub>2</sub>')
@@ -114,92 +110,46 @@ class DisplayFractionTagTest(TestCase):
         self.assertEqual(rendered.strip(), '1 <sup>1</sup>&frasl;<sub>2</sub>')
 
     def test_limit_denominator(self):
-        c = Context(
-            {'frac': 1/3.0,
-             'limit_denominator': 3,
-             'mixed_numbers': True,
-             'coerce_thirds': True
-         })
+        c = Context({'frac': 1 / 3.0, 'limit_denominator': 3, 'mixed_numbers': True, 'coerce_thirds': True})
         rendered = self.all_params_template.render(c)
         self.assertEqual(rendered.strip(), '<sup>1</sup>&frasl;<sub>3</sub>')
 
     def test_allow_mixed_numbers_with_improper_fraction(self):
-        c = Context(
-            {'frac': 1.5,
-             'limit_denominator': None,
-             'mixed_numbers': True,
-             'coerce_thirds': True
-         })
+        c = Context({'frac': 1.5, 'limit_denominator': None, 'mixed_numbers': True, 'coerce_thirds': True})
         rendered = self.all_params_template.render(c)
         self.assertEqual(rendered.strip(), '1 <sup>1</sup>&frasl;<sub>2</sub>')
 
-        c = Context(
-            {'frac': 1.5,
-             'limit_denominator': None,
-             'mixed_numbers': False,
-             'coerce_thirds': True
-         })
+        c = Context({'frac': 1.5, 'limit_denominator': None, 'mixed_numbers': False, 'coerce_thirds': True})
         rendered = self.all_params_template.render(c)
         self.assertEqual(rendered.strip(), '<sup>3</sup>&frasl;<sub>2</sub>')
 
     def test_allow_mixed_numbers_with_whole_number_int(self):
-        c = Context(
-            {'frac': 4,
-             'limit_denominator': None,
-             'mixed_numbers': True,
-             'coerce_thirds': True
-        })
+        c = Context({'frac': 4, 'limit_denominator': None, 'mixed_numbers': True, 'coerce_thirds': True})
         rendered = self.all_params_template.render(c)
 
         self.assertEqual(rendered.strip(), '4')
 
-        c = Context(
-            {'frac': 4,
-             'limit_denominator': None,
-             'mixed_numbers': False,
-             'coerce_thirds': True
-         })
+        c = Context({'frac': 4, 'limit_denominator': None, 'mixed_numbers': False, 'coerce_thirds': True})
         rendered = self.all_params_template.render(c)
         self.assertEqual(rendered.strip(), '<sup>4</sup>&frasl;<sub>1</sub>')
 
     def test_allow_mixed_numbers_with_whole_number_float(self):
 
-        c = Context(
-            {'frac': 4.0,
-             'limit_denominator': None,
-             'mixed_numbers': True,
-             'coerce_thirds': True
-         })
+        c = Context({'frac': 4.0, 'limit_denominator': None, 'mixed_numbers': True, 'coerce_thirds': True})
         rendered = self.all_params_template.render(c)
         self.assertEqual(rendered.strip(), '4')
 
-        c = Context(
-            {'frac': 4.0,
-             'limit_denominator': None,
-             'mixed_numbers': False,
-             'coerce_thirds': True
-         })
+        c = Context({'frac': 4.0, 'limit_denominator': None, 'mixed_numbers': False, 'coerce_thirds': True})
         rendered = self.all_params_template.render(c)
         self.assertEqual(rendered.strip(), '<sup>4</sup>&frasl;<sub>1</sub>')
 
-
     def test_allow_mixed_numbers_with_whole_number_decimal(self):
 
-        c = Context(
-            {'frac': Decimal('4.0'),
-             'limit_denominator': None,
-             'mixed_numbers': True,
-             'coerce_thirds': True
-         })
+        c = Context({'frac': Decimal('4.0'), 'limit_denominator': None, 'mixed_numbers': True, 'coerce_thirds': True})
         rendered = self.all_params_template.render(c)
         self.assertEqual(rendered.strip(), '4')
 
-        c = Context(
-            {'frac': Decimal('4.0'),
-             'limit_denominator': None,
-             'mixed_numbers': False,
-             'coerce_thirds': True
-         })
+        c = Context({'frac': Decimal('4.0'), 'limit_denominator': None, 'mixed_numbers': False, 'coerce_thirds': True})
         rendered = self.all_params_template.render(c)
         self.assertEqual(rendered.strip(), '<sup>4</sup>&frasl;<sub>1</sub>')
 
@@ -209,10 +159,7 @@ class DisplayFractionTagTest(TestCase):
         self.assertEqual(rendered.strip(), '0')
 
     def test_zero_no_mixed_numbers(self):
-        c = Context({'frac': 0,
-                     'limit_denominator': None,
-                     'mixed_numbers': False,
-                     'coerce_thirds': True})
+        c = Context({'frac': 0, 'limit_denominator': None, 'mixed_numbers': False, 'coerce_thirds': True})
         rendered = self.all_params_template.render(c)
         self.assertEqual(rendered.strip(), '<sup>0</sup>&frasl;<sub>1</sub>')
 
@@ -223,10 +170,12 @@ class DisplayImproperFractionTagTest(TestCase):
     """
 
     def setUp(self):
-        self.template = Template("""
+        self.template = Template(
+            """
         {% load fractions %}
         {% display_improper_fraction frac %}
-        """)
+        """
+        )
 
     def test_improper_fraction_float(self):
         c = Context({'frac': 1.5})
@@ -254,7 +203,7 @@ class DisplayImproperFractionTagTest(TestCase):
         self.assertEqual(rendered.strip(), '<sup>4</sup>&frasl;<sub>1</sub>')
 
     def test_proper_fraction_float(self):
-        c = Context({'frac': .5})
+        c = Context({'frac': 0.5})
         rendered = self.template.render(c)
         self.assertEqual(rendered.strip(), '<sup>1</sup>&frasl;<sub>2</sub>')
 
@@ -265,7 +214,6 @@ class DisplayImproperFractionTagTest(TestCase):
 
 
 class DecimalFractionFieldTest(TestCase):
-
     def test_prepare_value_int(self):
         """
         Test that a standard int as input is returned
@@ -301,7 +249,7 @@ class DecimalFractionFieldTest(TestCase):
         converted to a string fraction
         """
         field = DecimalFractionField()
-        result = field.prepare_value(float(.5))
+        result = field.prepare_value(float(0.5))
         self.assertEqual('1/2', result)
 
     def test_prepare_value_limit_denominator(self):
@@ -310,7 +258,7 @@ class DecimalFractionFieldTest(TestCase):
         with the limit_denominator paramter
         """
         field = DecimalFractionField(limit_denominator=3)
-        result = field.prepare_value(Decimal(1/3.0))
+        result = field.prepare_value(Decimal(1 / 3.0))
         self.assertEqual('1/3', result)
 
     def test_prepare_value_coerce_thirds(self):
@@ -319,25 +267,25 @@ class DecimalFractionFieldTest(TestCase):
         are converted properly to 1/3 and 2/3
         """
         field = DecimalFractionField(coerce_thirds=True)
-        result = field.prepare_value(Decimal(1/3.0))
+        result = field.prepare_value(Decimal(1 / 3.0))
         self.assertEqual('1/3', result)
 
-        result = field.prepare_value(Decimal(1/3.0))
+        result = field.prepare_value(Decimal(1 / 3.0))
         self.assertEqual('1/3', result)
 
-        result = field.prepare_value(Decimal(2/3.0))
+        result = field.prepare_value(Decimal(2 / 3.0))
         self.assertEqual('2/3', result)
 
-        result = field.prepare_value(Decimal(2/6.0))
+        result = field.prepare_value(Decimal(2 / 6.0))
         self.assertEqual('1/3', result)
 
-        result = field.prepare_value(Decimal(4/6.0))
+        result = field.prepare_value(Decimal(4 / 6.0))
         self.assertEqual('2/3', result)
 
-        result = field.prepare_value(Decimal(4/3.0))
+        result = field.prepare_value(Decimal(4 / 3.0))
         self.assertEqual('1 1/3', result)
 
-        result = field.prepare_value(Decimal(5/3.0))
+        result = field.prepare_value(Decimal(5 / 3.0))
         self.assertEqual('1 2/3', result)
 
     def test_to_python_decimal(self):
@@ -346,7 +294,7 @@ class DecimalFractionFieldTest(TestCase):
         the value is returned as is
         """
         field = DecimalFractionField()
-        value = Decimal(.5)
+        value = Decimal(0.5)
         result = field.to_python(value)
         self.assertEqual(value, result)
 
@@ -356,7 +304,7 @@ class DecimalFractionFieldTest(TestCase):
         the value is returned as as :class:`decimal.Decimal`
         """
         field = DecimalFractionField()
-        value = .5
+        value = 0.5
         result = field.to_python(value)
         self.assertEqual(Decimal(value), result)
 
@@ -392,27 +340,23 @@ class DecimalFractionFieldTest(TestCase):
         field = DecimalFractionField()
         value = '1 1/2'
         result = field.to_python(value)
-        self.assertEqual(Decimal(3/2.0).quantize(Decimal('0.000')),
-                         result.quantize(Decimal('0.000')))
+        self.assertEqual(Decimal(3 / 2.0).quantize(Decimal('0.000')), result.quantize(Decimal('0.000')))
 
     def test_to_python_hyphenated_mixed_fraction_string(self):
         field = DecimalFractionField()
         value = '1-1/2'
         result = field.to_python(value)
-        self.assertEqual(Decimal(3/2.0).quantize(Decimal('0.000')),
-                         result.quantize(Decimal('0.000')))
+        self.assertEqual(Decimal(3 / 2.0).quantize(Decimal('0.000')), result.quantize(Decimal('0.000')))
 
         value = '1 - 1/2'
         result = field.to_python(value)
-        self.assertEqual(Decimal(3/2.0).quantize(Decimal('0.000')),
-                         result.quantize(Decimal('0.000')))
+        self.assertEqual(Decimal(3 / 2.0).quantize(Decimal('0.000')), result.quantize(Decimal('0.000')))
 
     def test_to_python_anded_mixed_fraction_string(self):
         field = DecimalFractionField()
         value = '1 and 1/2'
         result = field.to_python(value)
-        self.assertEqual(Decimal(3/2.0).quantize(Decimal('0.000')),
-                         result.quantize(Decimal('0.000')))
+        self.assertEqual(Decimal(3 / 2.0).quantize(Decimal('0.000')), result.quantize(Decimal('0.000')))
 
     def test_to_python_method_validation_errors(self):
         """
@@ -460,8 +404,8 @@ class DecimalFractionFieldTest(TestCase):
         self.assertEqual(Decimal('1.01'), field.round_decimal_value(Decimal('1.011')))
         self.assertEqual(Decimal('10001'), field.round_decimal_value(Decimal('10000.6')))
 
-class GetFractionUnicodeEntityTest(TestCase):
 
+class GetFractionUnicodeEntityTest(TestCase):
     def test_one_half(self):
         f = fractions.Fraction(1, 2)
         entity = get_fraction_unicode_entity(f)
@@ -577,7 +521,6 @@ class GetFractionUnicodeEntityTest(TestCase):
 
 
 class FractionFieldTest(TestCase):
-
     def test_prepare_value_int(self):
         """
         Test that a standard int as input is returned
@@ -613,7 +556,7 @@ class FractionFieldTest(TestCase):
         converted to a string fraction
         """
         field = FractionField()
-        result = field.prepare_value(float(.5))
+        result = field.prepare_value(float(0.5))
         self.assertEqual('1/2', result)
 
     def test_prepare_value_fraction(self):
@@ -630,7 +573,7 @@ class FractionFieldTest(TestCase):
         with the limit_denominator paramter
         """
         field = FractionField(limit_denominator=3)
-        result = field.prepare_value(Decimal(1/3.0))
+        result = field.prepare_value(Decimal(1 / 3.0))
         self.assertEqual('1/3', result)
 
     def test_prepare_value_coerce_thirds(self):
@@ -639,25 +582,25 @@ class FractionFieldTest(TestCase):
         are converted properly to 1/3 and 2/3
         """
         field = FractionField(coerce_thirds=True)
-        result = field.prepare_value(Decimal(1/3.0))
+        result = field.prepare_value(Decimal(1 / 3.0))
         self.assertEqual('1/3', result)
 
-        result = field.prepare_value(Decimal(1/3.0))
+        result = field.prepare_value(Decimal(1 / 3.0))
         self.assertEqual('1/3', result)
 
-        result = field.prepare_value(Decimal(2/3.0))
+        result = field.prepare_value(Decimal(2 / 3.0))
         self.assertEqual('2/3', result)
 
-        result = field.prepare_value(Decimal(2/6.0))
+        result = field.prepare_value(Decimal(2 / 6.0))
         self.assertEqual('1/3', result)
 
-        result = field.prepare_value(Decimal(4/6.0))
+        result = field.prepare_value(Decimal(4 / 6.0))
         self.assertEqual('2/3', result)
 
-        result = field.prepare_value(Decimal(4/3.0))
+        result = field.prepare_value(Decimal(4 / 3.0))
         self.assertEqual('1 1/3', result)
 
-        result = field.prepare_value(Decimal(5/3.0))
+        result = field.prepare_value(Decimal(5 / 3.0))
         self.assertEqual('1 2/3', result)
 
     def test_to_python_decimal(self):
@@ -666,7 +609,7 @@ class FractionFieldTest(TestCase):
         a :class:`fractions.Fraction` is returned
         """
         field = FractionField()
-        value = Decimal(.5)
+        value = Decimal(0.5)
         result = field.to_python(value)
         self.assertEqual(fractions.Fraction(value), result)
 
@@ -676,7 +619,7 @@ class FractionFieldTest(TestCase):
         the value is returned as as :class:`fractions.Fraction`
         """
         field = FractionField()
-        value = .5
+        value = 0.5
         result = field.to_python(value)
         self.assertEqual(fractions.Fraction(value), result)
 
@@ -697,7 +640,7 @@ class FractionFieldTest(TestCase):
         self.assertEqual(fractions.Fraction('2'), result)
 
     def test_to_python_float_string(self):
-        field =FractionField()
+        field = FractionField()
         value = '0.5'
         result = field.to_python(value)
         self.assertEqual(fractions.Fraction(value), result)
