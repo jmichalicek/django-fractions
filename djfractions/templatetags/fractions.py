@@ -1,5 +1,3 @@
-from __future__ import unicode_literals, absolute_import, division
-
 from django import template
 
 from decimal import Decimal, InvalidOperation
@@ -12,8 +10,7 @@ register = template.Library()
 
 
 @register.inclusion_tag('djfractions/display_fraction.html', name='display_fraction')
-def display_fraction(value, limit_denominator=None, allow_mixed_numbers=True,
-                     coerce_thirds=True):
+def display_fraction(value, limit_denominator=None, allow_mixed_numbers=True, coerce_thirds=True):
     """
     Display a numeric value as an html fraction using
     <sup>numerator</sup>&frasl;<sub>denominator</sub>
@@ -30,10 +27,9 @@ def display_fraction(value, limit_denominator=None, allow_mixed_numbers=True,
     """
 
     try:
-        whole_number, numerator, denominator = get_fraction_parts(value,
-                                                                  allow_mixed_numbers,
-                                                                  limit_denominator,
-                                                                  coerce_thirds)
+        whole_number, numerator, denominator = get_fraction_parts(
+            value, allow_mixed_numbers, limit_denominator, coerce_thirds
+        )
         unicode_entity = get_fraction_unicode_entity(fractions.Fraction(numerator, denominator))
     except (ValueError, InvalidOperation) as e:
         whole_number, numerator, denominator, unicode_entity = (value, 0, 0, None)
@@ -63,5 +59,6 @@ def display_improper_fraction(value, limit_denominator=None, coerce_thirds=True)
         rather than 3/10, 33/100, etc. and .66 and .67 are forced to 2/3.
         Defaults to True.
     """
-    return display_fraction(value, limit_denominator=limit_denominator,
-                            allow_mixed_numbers=False, coerce_thirds=coerce_thirds)
+    return display_fraction(
+        value, limit_denominator=limit_denominator, allow_mixed_numbers=False, coerce_thirds=coerce_thirds
+    )

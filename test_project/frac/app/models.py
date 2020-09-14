@@ -12,29 +12,15 @@ class TestModel(models.Model):
 
     defaults = DecimalFractionField(max_digits=10, decimal_places=5)
     denominator_limited_to_ten = DecimalFractionField(
-        limit_denominator=10, decimal_places=10, max_digits=15, null=True, default=None
+        limit_denominator=10, decimal_places=10, max_digits=15, null=True, default=None,
     )
     coerce_thirds_true = DecimalFractionField(
-        coerce_thirds=True, decimal_places=10, max_digits=15, null=True, default=None
+        coerce_thirds=True, decimal_places=10, max_digits=15, null=True, default=None,
     )
     # DecimalFractionField Django's DecimalField in many aspects
     # and that does some fiddling which when doing proper float division
     # will result in exceptions being raised if a fraction such as 1/3
     # is saved to the database.  Setting a max decimal_places fixes this.
     decimal_places_limited = DecimalFractionField(
-        decimal_places=10, max_digits=15, coerce_thirds=False, null=True, default=None
+        decimal_places=10, max_digits=15, coerce_thirds=False, null=True, default=None,
     )
-
-
-class BadTestModel(models.Model):
-    """
-    A model with bad versions of the DecimalFractionField.
-
-    This model is required for some of the field tests because some internals of
-    Django expect that the field is part of a model and contribute_to_class() has been called
-    and contribute_to_class() expects that a db migration which adds that field to the db
-    has been run
-    """
-
-    missing_max_digits = DecimalFractionField(decimal_places=5)
-    missing_decimal_places = DecimalFractionField(max_digits=5)
