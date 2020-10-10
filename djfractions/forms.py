@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.core import validators
 from django.utils.translation import ugettext_lazy as _, ungettext_lazy
 
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal, InvalidOperation, DecimalException
 import fractions
 import numbers
 import re
