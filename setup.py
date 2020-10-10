@@ -31,7 +31,7 @@ setup(
     name='django-fractions',
     version=version,
     description="""Fraction display and form fields for Django""",
-    long_description=readme + '\n\n' + history,
+    long_description=readme,
     author='Justin Michalicek',
     author_email='jmichalicek@gmail.com',
     url='https://github.com/jmichalicek/django-fractions',
