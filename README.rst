@@ -5,8 +5,9 @@ django-fractions
 .. image:: https://badge.fury.io/py/django-fractions.png
     :target: https://badge.fury.io/py/django-fractions
 
-.. image:: https://travis-ci.org/jmichalicek/django-fractions.png?branch=master
-    :target: https://travis-ci.org/jmichalicek/django-fractions
+.. image:: https://github.com/jmichalicek/django-fractions/workflows/Python%20package/badge.svg
+    :target: https://github.com/jmichalicek/django-fractions/actions?query=workflow%3A%22Python+package%22
+
 
 Fraction display and form fields for Django
 
