@@ -1,9 +1,9 @@
 __version__ = '2.0.0'
 
-from decimal import Decimal
 import fractions
 import re
-
+from decimal import Decimal
+from typing import Any
 
 __all__ = [
     'quantity_to_decimal',
@@ -33,7 +33,7 @@ HTML_ENTITIES = [
 ]
 
 
-def is_number(s):
+def is_number(s: Any) -> bool:
     """
     Determine if the input value is numeric - an int, float, decimal.Decimal,
     or a string such as '1', '1.23', etc.
@@ -55,7 +55,7 @@ def is_number(s):
     return False
 
 
-def is_fraction(s):
+def is_fraction(s: Any) -> bool:
     """
     Determine if the input string appears to represent a fraction.
     This does not include mixed numbers such as 1 1/3
@@ -65,7 +65,7 @@ def is_fraction(s):
     return bool(re.match(r'^-?\d+/\d+$', s))
 
 
-def coerce_to_thirds(value):
+def coerce_to_thirds(value: fractions.Fraction) -> fractions.Fraction:
     """
     takes a :class:`fractions.Fraction` and forces it to thirds if it is one that
     is frequently the result of taking a number such as 1/3, converting to decimal/float,
@@ -82,7 +82,7 @@ def coerce_to_thirds(value):
     return value
 
 
-def quantity_to_decimal(quantity_string):
+def quantity_to_decimal(quantity_string: str) -> decimal.Decimal:
     """
     Take a quantity string and return a decimal.
 
@@ -123,7 +123,7 @@ def quantity_to_decimal(quantity_string):
     return Decimal(sum(number_stack)) * positive_or_negative
 
 
-def quantity_to_fraction(quantity_string):
+def quantity_to_fraction(quantity_string: str) -> fractions.Fraction:
     """
     Take a quantity string and return a :class:`fractions.Fraction`.
 
@@ -160,7 +160,7 @@ def quantity_to_fraction(quantity_string):
     return f
 
 
-def _fraction_string_to_fraction(fraction):
+def _fraction_string_to_fraction(fraction: str) -> fractions.Fraction:
     """
     Convert a string representing a fraction to a :class:`fractions.Fraction`
     """
@@ -170,7 +170,7 @@ def _fraction_string_to_fraction(fraction):
     return fractions.Fraction(numerator, denominator)
 
 
-def _fraction_string_to_decimal(fraction):
+def _fraction_string_to_decimal(fraction: str) -> decimal.Decimal:
     """
     Convert strings such as '1/4' to a Decimal
     """
@@ -180,7 +180,7 @@ def _fraction_string_to_decimal(fraction):
     return Decimal(numerator / denominator)
 
 
-def get_fraction_parts(value, allow_mixed_numbers=True, limit_denominator=None, coerce_thirds=True):
+def get_fraction_parts(value: (fractions.Fraction | float | decimal.Decimal | str | int), allow_mixed_numbers: bool=True, limit_denominator: (int | None)=None, coerce_thirds: bool=True):
     """
     Takes an `int`, `float`, or :class:`decimal.Decimal` and returns
     a tuple of (whole_number, numerator, denominator).  If allow_mixed_numbers
@@ -220,7 +220,7 @@ def get_fraction_parts(value, allow_mixed_numbers=True, limit_denominator=None, 
     return (whole_number, f.numerator, f.denominator)
 
 
-def get_fraction_unicode_entity(value):
+def get_fraction_unicode_entity(value: (fractions.Fraction | float | decimal.Decimal | str | int)) -> str:
     """
     Returns the html unicode entity for the fraction if one exists or None
 
@@ -229,7 +229,7 @@ def get_fraction_unicode_entity(value):
     if not isinstance(value, fractions.Fraction):
         value = fractions.Fraction(value)
 
-    entity = u'&frac%d%d;' % (value.numerator, value.denominator)
+    entity = '&frac%d%d;' % (value.numerator, value.denominator)
 
     if entity not in HTML_ENTITIES:
         return None
