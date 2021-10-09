@@ -3,7 +3,7 @@ __version__ = '2.0.0'
 import fractions
 import re
 from decimal import Decimal
-from typing import Any
+from typing import Any, Union
 
 __all__ = [
     'quantity_to_decimal',
@@ -82,7 +82,7 @@ def coerce_to_thirds(value: fractions.Fraction) -> fractions.Fraction:
     return value
 
 
-def quantity_to_decimal(quantity_string: str) -> decimal.Decimal:
+def quantity_to_decimal(quantity_string: str) -> Decimal:
     """
     Take a quantity string and return a decimal.
 
@@ -170,7 +170,7 @@ def _fraction_string_to_fraction(fraction: str) -> fractions.Fraction:
     return fractions.Fraction(numerator, denominator)
 
 
-def _fraction_string_to_decimal(fraction: str) -> decimal.Decimal:
+def _fraction_string_to_decimal(fraction: str) -> Decimal:
     """
     Convert strings such as '1/4' to a Decimal
     """
@@ -180,7 +180,12 @@ def _fraction_string_to_decimal(fraction: str) -> decimal.Decimal:
     return Decimal(numerator / denominator)
 
 
-def get_fraction_parts(value: (fractions.Fraction | float | decimal.Decimal | str | int), allow_mixed_numbers: bool=True, limit_denominator: (int | None)=None, coerce_thirds: bool=True):
+def get_fraction_parts(
+    value: Union[fractions.Fraction, float, Decimal, int, str],
+    allow_mixed_numbers: bool = True,
+    limit_denominator: Union[int, None] = None,
+    coerce_thirds: bool = True,
+):
     """
     Takes an `int`, `float`, or :class:`decimal.Decimal` and returns
     a tuple of (whole_number, numerator, denominator).  If allow_mixed_numbers
@@ -220,7 +225,7 @@ def get_fraction_parts(value: (fractions.Fraction | float | decimal.Decimal | st
     return (whole_number, f.numerator, f.denominator)
 
 
-def get_fraction_unicode_entity(value: (fractions.Fraction | float | decimal.Decimal | str | int)) -> str:
+def get_fraction_unicode_entity(value: Union[fractions.Fraction, float, Decimal, int, str]) -> str:
     """
     Returns the html unicode entity for the fraction if one exists or None
 

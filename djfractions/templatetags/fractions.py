@@ -1,6 +1,6 @@
 import fractions
 from decimal import InvalidOperation
-from typing import Any
+from typing import Any, Union
 
 from django import template
 
@@ -10,7 +10,7 @@ register = template.Library()
 
 
 @register.inclusion_tag('djfractions/display_fraction.html', name='display_fraction')
-def display_fraction(value: Any, limit_denominator: (int | None)=None, allow_mixed_numbers: bool=True, coerce_thirds: bool=True) -> str:
+def display_fraction(value: Any, limit_denominator: Union[int, None]=None, allow_mixed_numbers: bool=True, coerce_thirds: bool=True) -> str:
     """
     Display a numeric value as an html fraction using
     <sup>numerator</sup>&frasl;<sub>denominator</sub>
@@ -44,7 +44,7 @@ def display_fraction(value: Any, limit_denominator: (int | None)=None, allow_mix
 
 
 @register.inclusion_tag('djfractions/display_fraction.html', name='display_improper_fraction')
-def display_improper_fraction(value: Any, limit_denominator: (int | None)=None, coerce_thirds: bool=True) -> str:
+def display_improper_fraction(value: Any, limit_denominator: Union[int, None]=None, coerce_thirds: bool=True) -> str:
     """
     Display a numeric value as an html fraction using
     <sup>numerator</sup>&frasl;<sub>denominator</sub>.
