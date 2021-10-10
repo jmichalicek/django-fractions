@@ -1,6 +1,11 @@
 import fractions
 from decimal import InvalidOperation
-from typing import Any, Union, TypedDict
+from typing import Any
+try:
+    from typing import TypedDict
+except ImportError:
+    # temporary until all python versions < 3.8 are dropped
+    from typing_extensions import TypedDict
 
 from django import template
 

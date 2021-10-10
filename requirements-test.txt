@@ -1,11 +1,12 @@
 coverage
 coveralls
+django-stubs  # for mypy
 flake8
 mock
 mypy
 pytest
 tox
 tox-gh-actions
-
+typing-extensions  # for backported typing stuff
 
 # Additional test requirements go here
