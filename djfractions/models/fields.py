@@ -10,7 +10,7 @@ from django.db.models import Field
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
-from .. import coerce_to_thirds
+from .. import coerce_to_thirds, is_number
 from .. import forms as fraction_forms
 
 logger = logging.getLogger(__name__)
@@ -34,7 +34,7 @@ class DecimalFractionField(Field):
         name: str = None,
         max_digits: int = None,
         decimal_places: int = None,
-        limit_denominator: bool = None,
+        limit_denominator: int = None,
         coerce_thirds: bool = True,
         **kwargs
     ):
@@ -63,7 +63,8 @@ class DecimalFractionField(Field):
 
     def _check_decimal_places(self) -> List[checks.Error]:
         try:
-            decimal_places = int(self.decimal_places)
+            # ignoring type to make mypy happy, the exception handling deals with this being incorrect
+            decimal_places = int(self.decimal_places) # type: ignore
             if decimal_places < 0:
                 raise ValueError()
         except TypeError:
@@ -87,7 +88,8 @@ class DecimalFractionField(Field):
 
     def _check_max_digits(self) -> List[checks.Error]:
         try:
-            max_digits = int(self.max_digits)
+            # ignoring type to make mypy happy, the exception handling deals with this being incorrect
+            max_digits = int(self.max_digits)  # type: ignore
             if max_digits <= 0:
                 raise ValueError()
         except TypeError:
@@ -110,7 +112,8 @@ class DecimalFractionField(Field):
             return []
 
     def _check_decimal_places_and_max_digits(self, **kwargs) -> List[checks.Error]:
-        if int(self.decimal_places) > int(self.max_digits):
+        # ignoring type to make mypy happy, the exception handling deals with this being incorrect
+        if int(self.decimal_places) > int(self.max_digits): # type: ignore
             return [
                 checks.Error(
                     "'max_digits' must be greater or equal to 'decimal_places'.",
@@ -147,7 +150,7 @@ class DecimalFractionField(Field):
 
     def get_prep_value(
         self, value: Union[fractions.Fraction, decimal.Decimal, float, int, str, None]
-    ) -> Union[fractions.Fraction, None]:
+    ) -> Union[decimal.Decimal, None]:
         # not super clear, docs sound like this must be overridden and is the
         # reverse of to_python, but
         # django.db.models.fields.DecimalField just calls self.to_python() here
