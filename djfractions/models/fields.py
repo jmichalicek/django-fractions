@@ -10,8 +10,8 @@ from django.db.models import Field
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
-from .. import coerce_to_thirds, is_number
-from .. import forms as fraction_forms
+from djfractions import coerce_to_thirds
+from djfractions import forms as fraction_forms
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +64,7 @@ class DecimalFractionField(Field):
     def _check_decimal_places(self) -> List[checks.Error]:
         try:
             # ignoring type to make mypy happy, the exception handling deals with this being incorrect
-            decimal_places = int(self.decimal_places) # type: ignore
+            decimal_places = int(self.decimal_places)  # type: ignore
             if decimal_places < 0:
                 raise ValueError()
         except TypeError:
@@ -113,7 +113,7 @@ class DecimalFractionField(Field):
 
     def _check_decimal_places_and_max_digits(self, **kwargs) -> List[checks.Error]:
         # ignoring type to make mypy happy, the exception handling deals with this being incorrect
-        if int(self.decimal_places) > int(self.max_digits): # type: ignore
+        if int(self.decimal_places) > int(self.max_digits):  # type: ignore
             return [
                 checks.Error(
                     "'max_digits' must be greater or equal to 'decimal_places'.",

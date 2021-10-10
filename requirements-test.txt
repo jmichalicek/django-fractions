@@ -1,6 +1,11 @@
 coverage
 coveralls
-mock
 flake8
+mock
+mypy
+pytest
+tox
+tox-gh-actions
+
 
 # Additional test requirements go here

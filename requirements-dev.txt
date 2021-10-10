@@ -3,5 +3,3 @@ Django
 black
 isort
 djhtml
-pydantic
-pydantic-django

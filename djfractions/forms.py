@@ -5,7 +5,6 @@ from django.utils.translation import ugettext_lazy as _, ungettext_lazy
 
 from decimal import Decimal, InvalidOperation, DecimalException
 import fractions
-import numbers
 import re
 
 from . import quantity_to_decimal, is_number, get_fraction_parts, coerce_to_thirds, quantity_to_fraction
@@ -323,7 +322,9 @@ class DecimalFractionField(FractionField):
 
         if self.max_digits is not None and digits > self.max_digits:
             raise ValidationError(
-                self.error_messages['max_digits'], code='max_digits', params={'max': self.max_digits},
+                self.error_messages['max_digits'],
+                code='max_digits',
+                params={'max': self.max_digits},
             )
         if self.decimal_places is not None and decimals > self.decimal_places:
             raise ValidationError(
