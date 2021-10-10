@@ -4,6 +4,7 @@ import fractions
 import re
 from decimal import Decimal
 from typing import Any, Union
+from djfractions.exceptions import InvalidFractionString, NoHtmlEntity
 
 __all__ = [
     'quantity_to_decimal',
@@ -13,6 +14,7 @@ __all__ = [
     'get_fraction_unicode_entity',
 ]
 
+# Enttities from https://dev.w3.org/html5/html-author/charref
 HTML_ENTITIES = [
     '&frac12;',
     '&frac13;',
@@ -154,6 +156,8 @@ def quantity_to_fraction(quantity_string: str) -> fractions.Fraction:
     # optional spaces, or the word and.  Examples:
     # 1 1/4, 1-1/4, 1 - 1/4, 1 and 1/4
     parts = re.match(r'^-?(\d+)(?:\s+|\s*-?\s*|\s+and\s+)(\d+\/\d+)', quantity_string)
+    if not parts:
+        raise InvalidFractionString('%s is not a valid fraction' % quantity_string)
     # parts.group(0) is the entire string, 1 is the whole number bit
     f = fractions.Fraction(parts.group(2))
     f = (f + int(parts.group(1))) * positive_or_negative
@@ -237,5 +241,5 @@ def get_fraction_unicode_entity(value: Union[fractions.Fraction, float, Decimal,
     entity = '&frac%d%d;' % (value.numerator, value.denominator)
 
     if entity not in HTML_ENTITIES:
-        return None
+        raise NoHtmlEntity('No valid HTML entity exists for %s' % value)
     return entity
