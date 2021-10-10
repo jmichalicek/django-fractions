@@ -1,6 +1,6 @@
 import fractions
 from decimal import InvalidOperation
-from typing import Any, Union
+from typing import Any, Union, TypedDict
 
 from django import template
 
@@ -8,9 +8,23 @@ from .. import get_fraction_parts, get_fraction_unicode_entity
 
 register = template.Library()
 
+# Not sure about this name just yet
+FractionDisplayData = TypedDict(
+    'FractionDisplayData',
+    {
+        'whole_number': int,
+        'numerator': int,
+        'denominator': int,
+        'unicode_entity': str,
+        'allow_mixed_numbers': bool,  # Why do I return this?
+    },
+)
+
 
 @register.inclusion_tag('djfractions/display_fraction.html', name='display_fraction')
-def display_fraction(value: Any, limit_denominator: Union[int, None]=None, allow_mixed_numbers: bool=True, coerce_thirds: bool=True) -> str:
+def display_fraction(
+    value: Any, limit_denominator: Union[int, None] = None, allow_mixed_numbers: bool = True, coerce_thirds: bool = True
+) -> FractionDisplayData:
     """
     Display a numeric value as an html fraction using
     <sup>numerator</sup>&frasl;<sub>denominator</sub>
@@ -19,7 +33,7 @@ def display_fraction(value: Any, limit_denominator: Union[int, None]=None, allow
     :param bool limit_denominator: Limit the denominator to this value.  Defaults to None,
         which in effect results in the :meth:`fractions.Fraction.limit_denominator()`
         default of `1000000`
-    :param bool mixed_numbers: Convert to mixed numbers such as 1 1/2 or keep improper
+    :param bool allow_mixed_numbers: Convert to mixed numbers such as 1 1/2 or keep improper
     fractions such as 3/2.  Defaults to True.
     :param bool coerce_thirds:  If True then .3 repeating is forced to 1/3
         rather than 3/10, 33/100, etc. and .66 and .67 are forced to 2/3.
@@ -32,7 +46,7 @@ def display_fraction(value: Any, limit_denominator: Union[int, None]=None, allow
         )
         unicode_entity = get_fraction_unicode_entity(fractions.Fraction(numerator, denominator))
     except (ValueError, InvalidOperation) as e:
-        whole_number, numerator, denominator, unicode_entity = (value, 0, 0, None)
+        whole_number, numerator, denominator, unicode_entity = (value, 0, 0, '')
 
     return {
         'whole_number': whole_number,
@@ -44,7 +58,9 @@ def display_fraction(value: Any, limit_denominator: Union[int, None]=None, allow
 
 
 @register.inclusion_tag('djfractions/display_fraction.html', name='display_improper_fraction')
-def display_improper_fraction(value: Any, limit_denominator: Union[int, None]=None, coerce_thirds: bool=True) -> str:
+def display_improper_fraction(
+    value: Any, limit_denominator: Union[int, None] = None, coerce_thirds: bool = True
+) -> FractionDisplayData:
     """
     Display a numeric value as an html fraction using
     <sup>numerator</sup>&frasl;<sub>denominator</sub>.
