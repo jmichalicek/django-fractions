@@ -11,7 +11,7 @@ class InvalidFractionString(FractionError):
     pass
 
 
-class NoHtmlEntity(FractionError):
+class NoHtmlUnicodeEntity(FractionError):
     """
     Raised when converting an unsupported fraction to an HTML entity
     from https://dev.w3.org/html5/html-author/charref

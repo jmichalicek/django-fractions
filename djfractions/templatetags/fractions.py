@@ -4,7 +4,8 @@ from typing import Any, Union, TypedDict
 
 from django import template
 
-from .. import get_fraction_parts, get_fraction_unicode_entity
+from djfractions import get_fraction_parts, get_fraction_unicode_entity
+from djfractions.exceptions import NoHtmlUnicodeEntity
 
 register = template.Library()
 
@@ -44,9 +45,15 @@ def display_fraction(
         whole_number, numerator, denominator = get_fraction_parts(
             value, allow_mixed_numbers, limit_denominator, coerce_thirds
         )
-        unicode_entity = get_fraction_unicode_entity(fractions.Fraction(numerator, denominator))
     except (ValueError, InvalidOperation) as e:
-        whole_number, numerator, denominator, unicode_entity = (value, 0, 0, '')
+        # Could just return early here since it is known that there is no unicode entity for 0/0
+        # although technically &infin; would be accurate but probably never what anyone wants
+        whole_number, numerator, denominator = (value, 0, 0)
+
+    try:
+        unicode_entity = get_fraction_unicode_entity(fractions.Fraction(numerator, denominator))
+    except NoHtmlUnicodeEntity as e:
+        unicode_entity = ''
 
     return {
         'whole_number': whole_number,

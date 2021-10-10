@@ -4,7 +4,7 @@ import fractions
 import re
 from decimal import Decimal
 from typing import Any, Union
-from djfractions.exceptions import InvalidFractionString, NoHtmlEntity
+from djfractions.exceptions import InvalidFractionString, NoHtmlUnicodeEntity
 
 __all__ = [
     'quantity_to_decimal',
@@ -241,5 +241,5 @@ def get_fraction_unicode_entity(value: Union[fractions.Fraction, float, Decimal,
     entity = '&frac%d%d;' % (value.numerator, value.denominator)
 
     if entity not in HTML_ENTITIES:
-        raise NoHtmlEntity('No valid HTML entity exists for %s' % value)
+        raise NoHtmlUnicodeEntity('No valid HTML entity exists for %s' % value)
     return entity
