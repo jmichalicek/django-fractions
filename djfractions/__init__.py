@@ -14,6 +14,9 @@ __all__ = [
     'get_fraction_unicode_entity',
 ]
 
+# Aligns with https://docs.python.org/3/library/fractions.html#fractions.Fraction.limit_denominator
+DEFAULT_MAX_DENOMINATOR = 1000000
+
 # Enttities from https://dev.w3.org/html5/html-author/charref
 HTML_ENTITIES = [
     '&frac12;',
@@ -187,7 +190,7 @@ def _fraction_string_to_decimal(fraction: str) -> Decimal:
 def get_fraction_parts(
     value: Union[fractions.Fraction, float, Decimal, int, str],
     allow_mixed_numbers: bool = True,
-    limit_denominator: Union[int, None] = None,
+    limit_denominator: int = DEFAULT_MAX_DENOMINATOR,
     coerce_thirds: bool = True,
 ):
     """
@@ -202,8 +205,8 @@ def get_fraction_parts(
         whole number such as 4, if allow_mixed_numbers is True, then
         a tuple of (4, 0, 1) would be returned, otherwise
         (0, 4, 1) would be returned.
-    :param int limit_denominator: Defaults to None.  If not None then
-        the fraction's denominator will be a maximum of the given number.
+    :param bool limit_denominator: Limit the denominator to this value.  Defaults to 1000000,
+        which is the same as :meth:`fractions.Fraction.limit_denominator()` default max_denominator
     :param bool coerce_thirds:  Defaults to True.  If True
         then .3 repeating is forced to 1/3 rather than 3/10, 33/100, etc.
         and .66 and .67 are forced to 2/3.

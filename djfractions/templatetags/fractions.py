@@ -4,7 +4,7 @@ from typing import Any, Union, TypedDict
 
 from django import template
 
-from djfractions import get_fraction_parts, get_fraction_unicode_entity
+from djfractions import get_fraction_parts, get_fraction_unicode_entity, DEFAULT_MAX_DENOMINATOR
 from djfractions.exceptions import NoHtmlUnicodeEntity
 
 register = template.Library()
@@ -24,16 +24,18 @@ FractionDisplayData = TypedDict(
 
 @register.inclusion_tag('djfractions/display_fraction.html', name='display_fraction')
 def display_fraction(
-    value: Any, limit_denominator: Union[int, None] = None, allow_mixed_numbers: bool = True, coerce_thirds: bool = True
+    value: Any,
+    limit_denominator: int = DEFAULT_MAX_DENOMINATOR,
+    allow_mixed_numbers: bool = True,
+    coerce_thirds: bool = True,
 ) -> FractionDisplayData:
     """
     Display a numeric value as an html fraction using
     <sup>numerator</sup>&frasl;<sub>denominator</sub>
     if value is not a whole number.
 
-    :param bool limit_denominator: Limit the denominator to this value.  Defaults to None,
-        which in effect results in the :meth:`fractions.Fraction.limit_denominator()`
-        default of `1000000`
+    :param int limit_denominator: Limit the denominator to this value.  Defaults to 1000000,
+        which is the same as :meth:`fractions.Fraction.limit_denominator()` default max_denominator
     :param bool allow_mixed_numbers: Convert to mixed numbers such as 1 1/2 or keep improper
     fractions such as 3/2.  Defaults to True.
     :param bool coerce_thirds:  If True then .3 repeating is forced to 1/3
@@ -66,7 +68,7 @@ def display_fraction(
 
 @register.inclusion_tag('djfractions/display_fraction.html', name='display_improper_fraction')
 def display_improper_fraction(
-    value: Any, limit_denominator: Union[int, None] = None, coerce_thirds: bool = True
+    value: Any, limit_denominator: int = DEFAULT_MAX_DENOMINATOR, coerce_thirds: bool = True
 ) -> FractionDisplayData:
     """
     Display a numeric value as an html fraction using
@@ -75,9 +77,8 @@ def display_improper_fraction(
     to mixed numbers, it will return improper fractions such as 3/2
     or even 4/1
 
-    :param bool limit_denominator: Limit the denominator to this value.  Defaults to None,
-        which in effect results in the :meth:`fractions.Fraction.limit_denominator()`
-        default of `1000000`
+    :param bool limit_denominator: Limit the denominator to this value.  Defaults to 1000000,
+        which is the same as :meth:`fractions.Fraction.limit_denominator()` default max_denominator
     :param bool coerce_thirds:  If True then .3 repeating is forced to 1/3
         rather than 3/10, 33/100, etc. and .66 and .67 are forced to 2/3.
         Defaults to True.
