@@ -1,9 +1,10 @@
 __version__ = '2.0.0'
 
-from decimal import Decimal
 import fractions
 import re
-
+from decimal import Decimal
+from typing import Any, Union
+from djfractions.exceptions import InvalidFractionString, NoHtmlUnicodeEntity
 
 __all__ = [
     'quantity_to_decimal',
@@ -13,6 +14,10 @@ __all__ = [
     'get_fraction_unicode_entity',
 ]
 
+# Aligns with https://docs.python.org/3/library/fractions.html#fractions.Fraction.limit_denominator
+DEFAULT_MAX_DENOMINATOR = 1000000
+
+# Enttities from https://dev.w3.org/html5/html-author/charref
 HTML_ENTITIES = [
     '&frac12;',
     '&frac13;',
@@ -33,7 +38,7 @@ HTML_ENTITIES = [
 ]
 
 
-def is_number(s):
+def is_number(s: Any) -> bool:
     """
     Determine if the input value is numeric - an int, float, decimal.Decimal,
     or a string such as '1', '1.23', etc.
@@ -55,7 +60,7 @@ def is_number(s):
     return False
 
 
-def is_fraction(s):
+def is_fraction(s: Any) -> bool:
     """
     Determine if the input string appears to represent a fraction.
     This does not include mixed numbers such as 1 1/3
@@ -65,7 +70,7 @@ def is_fraction(s):
     return bool(re.match(r'^-?\d+/\d+$', s))
 
 
-def coerce_to_thirds(value):
+def coerce_to_thirds(value: fractions.Fraction) -> fractions.Fraction:
     """
     takes a :class:`fractions.Fraction` and forces it to thirds if it is one that
     is frequently the result of taking a number such as 1/3, converting to decimal/float,
@@ -82,7 +87,7 @@ def coerce_to_thirds(value):
     return value
 
 
-def quantity_to_decimal(quantity_string):
+def quantity_to_decimal(quantity_string: str) -> Decimal:
     """
     Take a quantity string and return a decimal.
 
@@ -123,7 +128,7 @@ def quantity_to_decimal(quantity_string):
     return Decimal(sum(number_stack)) * positive_or_negative
 
 
-def quantity_to_fraction(quantity_string):
+def quantity_to_fraction(quantity_string: str) -> fractions.Fraction:
     """
     Take a quantity string and return a :class:`fractions.Fraction`.
 
@@ -154,13 +159,15 @@ def quantity_to_fraction(quantity_string):
     # optional spaces, or the word and.  Examples:
     # 1 1/4, 1-1/4, 1 - 1/4, 1 and 1/4
     parts = re.match(r'^-?(\d+)(?:\s+|\s*-?\s*|\s+and\s+)(\d+\/\d+)', quantity_string)
+    if not parts:
+        raise InvalidFractionString('%s is not a valid fraction' % quantity_string)
     # parts.group(0) is the entire string, 1 is the whole number bit
     f = fractions.Fraction(parts.group(2))
     f = (f + int(parts.group(1))) * positive_or_negative
     return f
 
 
-def _fraction_string_to_fraction(fraction):
+def _fraction_string_to_fraction(fraction: str) -> fractions.Fraction:
     """
     Convert a string representing a fraction to a :class:`fractions.Fraction`
     """
@@ -170,7 +177,7 @@ def _fraction_string_to_fraction(fraction):
     return fractions.Fraction(numerator, denominator)
 
 
-def _fraction_string_to_decimal(fraction):
+def _fraction_string_to_decimal(fraction: str) -> Decimal:
     """
     Convert strings such as '1/4' to a Decimal
     """
@@ -180,7 +187,12 @@ def _fraction_string_to_decimal(fraction):
     return Decimal(numerator / denominator)
 
 
-def get_fraction_parts(value, allow_mixed_numbers=True, limit_denominator=None, coerce_thirds=True):
+def get_fraction_parts(
+    value: Union[fractions.Fraction, float, Decimal, int, str],
+    allow_mixed_numbers: bool = True,
+    limit_denominator: int = DEFAULT_MAX_DENOMINATOR,
+    coerce_thirds: bool = True,
+):
     """
     Takes an `int`, `float`, or :class:`decimal.Decimal` and returns
     a tuple of (whole_number, numerator, denominator).  If allow_mixed_numbers
@@ -193,8 +205,8 @@ def get_fraction_parts(value, allow_mixed_numbers=True, limit_denominator=None, 
         whole number such as 4, if allow_mixed_numbers is True, then
         a tuple of (4, 0, 1) would be returned, otherwise
         (0, 4, 1) would be returned.
-    :param int limit_denominator: Defaults to None.  If not None then
-        the fraction's denominator will be a maximum of the given number.
+    :param bool limit_denominator: Limit the denominator to this value.  Defaults to 1000000,
+        which is the same as :meth:`fractions.Fraction.limit_denominator()` default max_denominator
     :param bool coerce_thirds:  Defaults to True.  If True
         then .3 repeating is forced to 1/3 rather than 3/10, 33/100, etc.
         and .66 and .67 are forced to 2/3.
@@ -220,7 +232,7 @@ def get_fraction_parts(value, allow_mixed_numbers=True, limit_denominator=None, 
     return (whole_number, f.numerator, f.denominator)
 
 
-def get_fraction_unicode_entity(value):
+def get_fraction_unicode_entity(value: Union[fractions.Fraction, float, Decimal, int, str]) -> str:
     """
     Returns the html unicode entity for the fraction if one exists or None
 
@@ -229,8 +241,8 @@ def get_fraction_unicode_entity(value):
     if not isinstance(value, fractions.Fraction):
         value = fractions.Fraction(value)
 
-    entity = u'&frac%d%d;' % (value.numerator, value.denominator)
+    entity = '&frac%d%d;' % (value.numerator, value.denominator)
 
     if entity not in HTML_ENTITIES:
-        return None
+        raise NoHtmlUnicodeEntity('No valid HTML entity exists for %s' % value)
     return entity

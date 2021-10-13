@@ -5,6 +5,7 @@ try:
     from django.test.utils import get_runner
 
     settings.configure(
+        SECRET_KEY='fakesecretkey',
         # Disable some system checks during tests for now
         # Django 1.11 appears to have gotten more strict about these
         # and now tests do not run, but since some older, supported

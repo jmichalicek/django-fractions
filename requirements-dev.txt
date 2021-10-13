@@ -1,2 +1,5 @@
 bumpversion
 Django
+black
+isort
+djhtml
