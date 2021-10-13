@@ -42,7 +42,6 @@ try:
         ]
 
     )
-    print('I just configured settings!!!!')
 
     try:
         import django
