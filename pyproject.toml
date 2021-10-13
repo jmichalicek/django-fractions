@@ -2,7 +2,7 @@
 plugins = ["mypy_django_plugin.main"]
 
 [tool.django-stubs]
-django_settings_module = "runtests"
+django_settings_module = "test_project.frac.frac.settings"
 
 [tool.black]
 line-length = 120

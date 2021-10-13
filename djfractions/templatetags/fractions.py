@@ -1,11 +1,15 @@
 import fractions
 from decimal import InvalidOperation
 from typing import Any
-try:
-    from typing import TypedDict
-except ImportError:
-    # temporary until all python versions < 3.8 are dropped
-    from typing_extensions import TypedDict
+
+
+# The try/accept is not working with mypy so for now just always use this.
+from typing_extensions import TypedDict
+# try:
+#     from typing import TypedDict
+# except ImportError:
+#     # temporary until all python versions < 3.8 are dropped
+#     from typing_extensions import TypedDict
 
 from django import template
 
