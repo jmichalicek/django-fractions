@@ -3,3 +3,5 @@ Django
 black
 isort
 djhtml
+pyupgrade
+django-upgrade

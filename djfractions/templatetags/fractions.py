@@ -19,16 +19,12 @@ from djfractions.exceptions import NoHtmlUnicodeEntity
 register = template.Library()
 
 # Not sure about this name just yet
-FractionDisplayData = TypedDict(
-    'FractionDisplayData',
-    {
-        'whole_number': int,
-        'numerator': int,
-        'denominator': int,
-        'unicode_entity': str,
-        'allow_mixed_numbers': bool,  # Why do I return this?
-    },
-)
+class FractionDisplayData(TypedDict):
+    whole_number: int
+    numerator: int
+    denominator: int
+    unicode_entity: str
+    allow_mixed_numbers: bool
 
 
 @register.inclusion_tag('djfractions/display_fraction.html', name='display_fraction')

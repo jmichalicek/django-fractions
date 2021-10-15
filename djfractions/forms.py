@@ -73,17 +73,17 @@ class FractionField(forms.Field):
             # including whole numbers) and numerator is falsey (should be 0)
             # just return the whole number.
             if (whole_number or whole_number == 0) and not numerator and self.use_mixed_numbers:
-                return u'%s' % whole_number
+                return '%s' % whole_number
 
             if whole_number and self.use_mixed_numbers:
-                fraction_string = u'%d' % whole_number
+                fraction_string = '%d' % whole_number
             else:
-                fraction_string = u''
+                fraction_string = ''
 
-            fraction_string = u'%s %d/%d' % (fraction_string, numerator, denominator)
+            fraction_string = '%s %d/%d' % (fraction_string, numerator, denominator)
 
         except (ValueError, InvalidOperation) as e:
-            fraction_string = u'%s' % value
+            fraction_string = '%s' % value
 
         return fraction_string.strip()
 
@@ -250,8 +250,8 @@ class DecimalFractionField(FractionField):
         # expect due to the max_digits handling.  It might be better
         # to just have users handle rounding and digit manipulation
         # themselves in Form.clean_FOO()
-        quantize_string = u'0' * self.decimal_places
-        quantize_string = u'.%s' % quantize_string
+        quantize_string = '0' * self.decimal_places
+        quantize_string = '.%s' % quantize_string
         # round to max number of decimal places
         value = value.quantize(Decimal(quantize_string))
         sign, digittuple, exponent = value.as_tuple()
@@ -272,14 +272,14 @@ class DecimalFractionField(FractionField):
             allowed_decimals = decimals
 
         # this will give us '0' or '00', etc.
-        quantize_string = u'0'
+        quantize_string = '0'
         if allowed_decimals > 0:
             quantize_string = quantize_string * allowed_decimals
             # if at least one decimal place, drop a decimal point in front.
             # if no decimal places can be used to reac max_digits then
             # use no leading decimal, causing Decimal.quantize() to round to
             # a whole number
-            quantize_string = u'.%s' % quantize_string
+            quantize_string = '.%s' % quantize_string
         value = value.quantize(Decimal(quantize_string))
         return value
 
