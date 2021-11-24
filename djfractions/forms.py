@@ -1,7 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.core import validators
-from django.utils.translation import ugettext_lazy as _, ungettext_lazy
+from django.utils.translation import gettext_lazy as _, ngettext_lazy
 
 from decimal import Decimal, InvalidOperation, DecimalException
 import fractions
@@ -155,17 +155,17 @@ class DecimalFractionField(FractionField):
 
     default_error_messages = {
         'invalid': _('Enter a fraction such as 1 1/4 or 1/4.'),
-        'max_digits': ungettext_lazy(
+        'max_digits': ngettext_lazy(
             'Ensure that there are no more than %(max)s digit in total.',
             'Ensure that there are no more than %(max)s digits in total.',
             'max',
         ),
-        'max_decimal_places': ungettext_lazy(
+        'max_decimal_places': ngettext_lazy(
             'Ensure that there are no more than %(max)s decimal place.',
             'Ensure that there are no more than %(max)s decimal places.',
             'max',
         ),
-        'max_whole_digits': ungettext_lazy(
+        'max_whole_digits': ngettext_lazy(
             'Ensure that there are no more than %(max)s digit before the decimal point.',
             'Ensure that there are no more than %(max)s digits before the decimal point.',
             'max',
