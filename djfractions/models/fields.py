@@ -8,7 +8,7 @@ from django.core.checks.messages import CheckMessage
 from django.db import connection
 from django.db.models import Field
 from django.utils.functional import cached_property
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from djfractions import coerce_to_thirds
 from djfractions import forms as fraction_forms
