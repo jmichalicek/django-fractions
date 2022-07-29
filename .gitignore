@@ -49,3 +49,7 @@ docs/_build
 *~
 \#*#
 *.swp
+
+# vs code
+.devcontainer
+.vscode
