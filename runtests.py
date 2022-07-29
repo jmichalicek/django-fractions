@@ -39,7 +39,8 @@ try:
                  'context_processors': []
              }
             }
-        ]
+        ],
+        DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
     )
 
