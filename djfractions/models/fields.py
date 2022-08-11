@@ -1,7 +1,7 @@
 import decimal
 import fractions
 import logging
-from typing import Any, List, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union
 
 from django.core import checks
 from django.core.checks.messages import CheckMessage
@@ -190,19 +190,13 @@ class DecimalFractionField(Field):
 
         return name, path, args, kwargs
 
-    def formfield(self, **kwargs) -> Any:
-        defaults = {
-            'form_class': fraction_forms.FractionField,
-        }
-        defaults.update(kwargs)
-
-        # return super().formfield(**{
-        #     'max_digits': self.max_digits,
-        #     'decimal_places': self.decimal_places,
-        #     'form_class': forms.DecimalField,
-        #     **kwargs,
-        # })
-        return super().formfield(**defaults)
+    def formfield(
+        self,
+        form_class: Optional[Any] = fraction_forms.FractionField,
+        choices_form_class: Optional[Any] = None,
+        **kwargs: Any
+    ) -> Any:
+        return super().formfield(form_class=form_class, choices_form_class=choices_form_class, **kwargs)
 
     def get_internal_type(self) -> str:
         # returning DecimalField, since we use the same backing column type as that
