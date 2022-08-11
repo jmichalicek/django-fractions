@@ -6,6 +6,18 @@ History
 Current
 +++++++++
 
+4.0.1 (2022-08-10)
++++++++++
+* I'm dumb and goofed thing up, so here we are
+
+3.0.0 (2022-08-10)
++++++++++
+* Create codeql-analysis.yml by @jmichalicek in #21
+* Add type checking by @jmichalicek in #22
+* Update supported python versions to 3.7+ by @jmichalicek in #23
+* fix: Django 4.0 deprecations by @GriceTurrble in #24
+* Add testing of django 4.0 by @jmichalicek in #27
+* Updated to support Django 4.1, drop old unsupported Django and Python versions by @jmichalicek in #29
 
 2.0.0 (2020-09-13)
 +++++++++
