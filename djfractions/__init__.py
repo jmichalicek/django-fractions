@@ -1,17 +1,18 @@
-__version__ = '3.0.0'
+__version__ = "3.0.0"
 
 import fractions
 import re
 from decimal import Decimal
 from typing import Any, Union
+
 from djfractions.exceptions import InvalidFractionString, NoHtmlUnicodeEntity
 
 __all__ = [
-    'quantity_to_decimal',
-    'is_number',
-    'is_fraction',
-    'get_fraction_parts',
-    'get_fraction_unicode_entity',
+    "quantity_to_decimal",
+    "is_number",
+    "is_fraction",
+    "get_fraction_parts",
+    "get_fraction_unicode_entity",
 ]
 
 # Aligns with https://docs.python.org/3/library/fractions.html#fractions.Fraction.limit_denominator
@@ -19,22 +20,22 @@ DEFAULT_MAX_DENOMINATOR = 1000000
 
 # Enttities from https://dev.w3.org/html5/html-author/charref
 HTML_ENTITIES = [
-    '&frac12;',
-    '&frac13;',
-    '&frac23;',
-    '&frac14;',
-    '&frac34;',
-    '&frac15;',
-    '&frac25;',
-    '&frac35;',
-    '&frac45;',
-    '&frac16;',
-    '&frac56;',
-    '&frac17;',
-    '&frac18;',
-    '&frac38;',
-    '&frac58;',
-    '&frac78;',
+    "&frac12;",
+    "&frac13;",
+    "&frac23;",
+    "&frac14;",
+    "&frac34;",
+    "&frac15;",
+    "&frac25;",
+    "&frac35;",
+    "&frac45;",
+    "&frac16;",
+    "&frac56;",
+    "&frac17;",
+    "&frac18;",
+    "&frac38;",
+    "&frac58;",
+    "&frac78;",
 ]
 
 
@@ -67,7 +68,7 @@ def is_fraction(s: Any) -> bool:
 
     :param s: A string value to check if it is formatted as a fraction.
     """
-    return bool(re.match(r'^-?\d+/\d+$', s))
+    return bool(re.match(r"^-?\d+/\d+$", s))
 
 
 def coerce_to_thirds(value: fractions.Fraction) -> fractions.Fraction:
@@ -76,12 +77,12 @@ def coerce_to_thirds(value: fractions.Fraction) -> fractions.Fraction:
     is frequently the result of taking a number such as 1/3, converting to decimal/float,
     then back to a fraction.
     """
-    temp_decimal = Decimal(value.numerator / value.denominator).quantize(Decimal('0.00'))
+    temp_decimal = Decimal(value.numerator / value.denominator).quantize(Decimal("0.00"))
     if (
-        temp_decimal % 1 == Decimal('.33')
-        or temp_decimal % 1 == Decimal('.3')
-        or temp_decimal % 1 == Decimal('.67')
-        or temp_decimal % 1 == Decimal('.6')
+        temp_decimal % 1 == Decimal(".33")
+        or temp_decimal % 1 == Decimal(".3")
+        or temp_decimal % 1 == Decimal(".67")
+        or temp_decimal % 1 == Decimal(".6")
     ):
         value = value.limit_denominator(3)
     return value
@@ -100,7 +101,7 @@ def quantity_to_decimal(quantity_string: str) -> Decimal:
 
     # get actual fraction-like strings to be N/N with no spaces
     quantity_string = quantity_string.strip()
-    quantity_string = re.sub(r'\s*/\s*', '/', quantity_string)
+    quantity_string = re.sub(r'\b(\d+)\s+/\s+(\d+)\b', r'\1/\2', quantity_string)
 
     if is_number(quantity_string):
         return Decimal(quantity_string)
@@ -111,8 +112,8 @@ def quantity_to_decimal(quantity_string: str) -> Decimal:
     # assume the a hyphen between a whole value and fraction such as 1-1/4
     # is a separator and not a negative fraction.
     # If the negative is first though, then we need to keep it negative.
-    positive_or_negative = -1 if quantity_string.startswith('-') else 1
-    quantity_string = quantity_string.replace('-', ' ')
+    positive_or_negative = -1 if quantity_string.startswith("-") else 1
+    quantity_string = quantity_string.replace("-", " ")
 
     parts = quantity_string.split()
     parts_length = len(parts)
@@ -140,7 +141,7 @@ def quantity_to_fraction(quantity_string: str) -> fractions.Fraction:
     """
     # get actual fraction-like strings to be N/N with no spaces
     quantity_string = quantity_string.strip()
-    quantity_string = re.sub(r'\s*/\s*', '/', quantity_string)
+    quantity_string = re.sub(r'\b(\d+)\s+/\s+(\d+)\b', r'\1/\2', quantity_string)
     if is_number(quantity_string):
         return fractions.Fraction(quantity_string)
 
@@ -153,14 +154,14 @@ def quantity_to_fraction(quantity_string: str) -> fractions.Fraction:
     # If the negative is first though, then we need to keep it negative.
     # Cannot just keep the fraction on the int or we end up subtraction.
     # -1 1/4 becomes -3/4 when what is meant is -5/4
-    positive_or_negative = -1 if quantity_string.startswith('-') else 1
+    positive_or_negative = -1 if quantity_string.startswith("-") else 1
 
     # non-capturing group in the middle handls just a space, hyphen with
     # optional spaces, or the word and.  Examples:
     # 1 1/4, 1-1/4, 1 - 1/4, 1 and 1/4
-    parts = re.match(r'^-?(\d+)(?:\s+|\s*-?\s*|\s+and\s+)(\d+\/\d+)', quantity_string)
+    parts = re.match(r"^-?(\d+)(?:\s+|\s*-?\s*|\s+and\s+)(\d+\/\d+)", quantity_string)
     if not parts:
-        raise InvalidFractionString('%s is not a valid fraction' % quantity_string)
+        raise InvalidFractionString("%s is not a valid fraction" % quantity_string)
     # parts.group(0) is the entire string, 1 is the whole number bit
     f = fractions.Fraction(parts.group(2))
     f = (f + int(parts.group(1))) * positive_or_negative
@@ -171,7 +172,7 @@ def _fraction_string_to_fraction(fraction: str) -> fractions.Fraction:
     """
     Convert a string representing a fraction to a :class:`fractions.Fraction`
     """
-    parts = fraction.split('/')
+    parts = fraction.split("/")
     numerator = int(parts[0])
     denominator = int(parts[1])
     return fractions.Fraction(numerator, denominator)
@@ -181,7 +182,7 @@ def _fraction_string_to_decimal(fraction: str) -> Decimal:
     """
     Convert strings such as '1/4' to a Decimal
     """
-    parts = fraction.split('/')
+    parts = fraction.split("/")
     numerator = int(parts[0])
     denominator = int(parts[1])
     return Decimal(numerator / denominator)
@@ -241,8 +242,8 @@ def get_fraction_unicode_entity(value: Union[fractions.Fraction, float, Decimal,
     if not isinstance(value, fractions.Fraction):
         value = fractions.Fraction(value)
 
-    entity = '&frac%d%d;' % (value.numerator, value.denominator)
+    entity = "&frac%d%d;" % (value.numerator, value.denominator)
 
     if entity not in HTML_ENTITIES:
-        raise NoHtmlUnicodeEntity('No valid HTML entity exists for %s' % value)
+        raise NoHtmlUnicodeEntity("No valid HTML entity exists for %s" % value)
     return entity

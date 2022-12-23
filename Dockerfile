@@ -1,4 +1,5 @@
-FROM python:3.10.5-bullseye AS dev
+FROM python:3.7 AS dev
+#FROM python:3.10.5-bullseye AS dev
 LABEL maintainer="Justin Michalicek <jmichalicek@gmail.com>"
 ENV PYTHONUNBUFFERED 1
 

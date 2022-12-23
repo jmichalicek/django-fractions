@@ -57,6 +57,9 @@ Get Started!
 
 Ready to contribute? Here's how to set up `django-fractions` for local development.
 
+These instructions are out of date. I have moved to developing in a docker container in
+a docker compose stack. I have not yet set that up to deal with multiple Python versions for tox.
+
 1. Fork the `django-fractions` repo on GitHub.
 2. Clone your fork locally::
 

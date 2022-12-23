@@ -5,7 +5,7 @@ from typing import Any, List, Optional, Tuple, Union
 
 from django.core import checks
 from django.core.checks.messages import CheckMessage
-from django.db import connection
+
 from django.db.models import Field
 from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
@@ -23,18 +23,20 @@ class DecimalFractionField(Field):
     """
 
     empty_strings_allowed = False
+    # ignoring type checking here because mypy and gettextlazy and django-stubs are fighting
+    # possibly only on python 3.7 or django 3.2
     default_error_messages = {
-        'invalid': _("'%(value)s' value must be a fraction number."),
+        "invalid": _("'%(value)s' value must be a fraction number."),  # type: ignore
     }
     description = _("Fraction number stored in the database as a Decimal")
 
     def __init__(
         self,
-        verbose_name: str = None,
-        name: str = None,
-        max_digits: int = None,
-        decimal_places: int = None,
-        limit_denominator: int = None,
+        verbose_name: Optional[str] = None,
+        name: Optional[str] = None,
+        max_digits: Optional[int] = None,
+        decimal_places: Optional[int] = None,
+        limit_denominator: Optional[int] = None,
         coerce_thirds: bool = True,
         **kwargs
     ):
@@ -72,7 +74,7 @@ class DecimalFractionField(Field):
                 checks.Error(
                     "DecimalFractionFields must define a 'decimal_places' attribute.",
                     obj=self,
-                    id='fields.E130',
+                    id="fields.E130",
                 )
             ]
         except ValueError:
@@ -80,7 +82,7 @@ class DecimalFractionField(Field):
                 checks.Error(
                     "'decimal_places' must be a non-negative integer.",
                     obj=self,
-                    id='fields.E131',
+                    id="fields.E131",
                 )
             ]
         else:
@@ -97,7 +99,7 @@ class DecimalFractionField(Field):
                 checks.Error(
                     "DecimalFractionFields must define a 'max_digits' attribute.",
                     obj=self,
-                    id='fields.E132',
+                    id="fields.E132",
                 )
             ]
         except ValueError:
@@ -105,7 +107,7 @@ class DecimalFractionField(Field):
                 checks.Error(
                     "'max_digits' must be a positive integer.",
                     obj=self,
-                    id='fields.E133',
+                    id="fields.E133",
                 )
             ]
         else:
@@ -118,12 +120,12 @@ class DecimalFractionField(Field):
                 checks.Error(
                     "'max_digits' must be greater or equal to 'decimal_places'.",
                     obj=self,
-                    id='fields.E134',
+                    id="fields.E134",
                 )
             ]
         return []
 
-    def from_db_value(self, value: Any, expression, connection, *args, **kwargs) -> fractions.Fraction:
+    def from_db_value(self, value: Any, expression: Any, connection: Any, *args, **kwargs) -> fractions.Fraction:
         # uses *args and **kwargs to handle the `context` param which django 1.11 passes in but 2.x+ do not.
         # Not sure if I even really need this anymore.
         return self.to_python(value)
@@ -131,7 +133,7 @@ class DecimalFractionField(Field):
     def get_db_prep_save(self, value: Any, connection):
         # return connection.ops.adapt_decimalfield_value(self.to_python(value), self.max_digits, self.decimal_places)
         # for django 1.9 the following will need used.
-        if hasattr(connection.ops, 'adapt_decimalfield_value'):
+        if hasattr(connection.ops, "adapt_decimalfield_value"):
             return connection.ops.adapt_decimalfield_value(
                 self.get_prep_value(value),
                 self.max_digits,
@@ -178,15 +180,15 @@ class DecimalFractionField(Field):
 
     def deconstruct(self) -> Tuple[str, str, list, dict]:
         name, path, args, kwargs = super().deconstruct()
-        kwargs['limit_denominator'] = self.limit_denominator
-        kwargs['coerce_thirds'] = self.coerce_thirds
+        kwargs["limit_denominator"] = self.limit_denominator
+        kwargs["coerce_thirds"] = self.coerce_thirds
 
         # added this
         # copied from decimal field
         if self.max_digits is not None:
-            kwargs['max_digits'] = self.max_digits
+            kwargs["max_digits"] = self.max_digits
         if self.decimal_places is not None:
-            kwargs['decimal_places'] = self.decimal_places
+            kwargs["decimal_places"] = self.decimal_places
 
         return name, path, args, kwargs
 
