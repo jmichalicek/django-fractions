@@ -1,13 +1,14 @@
-from django import forms
-from django.core.exceptions import ValidationError
-from django.core import validators
-from django.utils.translation import gettext_lazy as _, ngettext_lazy
-
-from decimal import Decimal, InvalidOperation, DecimalException
 import fractions
 import re
+from decimal import Decimal, DecimalException, InvalidOperation
 
-from . import quantity_to_decimal, is_number, get_fraction_parts, coerce_to_thirds, quantity_to_fraction
+from django import forms
+from django.core import validators
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ngettext_lazy
+
+from . import coerce_to_thirds, get_fraction_parts, is_number, quantity_to_decimal, quantity_to_fraction
 
 
 class FractionField(forms.Field):
@@ -30,14 +31,14 @@ class FractionField(forms.Field):
     """
 
     default_error_messages = {
-        'invalid': _('Enter a fraction such as 1 1/4 or 1/4.'),
+        "invalid": _("Enter a fraction such as 1 1/4 or 1/4."),
     }
 
     # matches standard 'x/y' fractions with 0 or more spaces before, after, or between characters.
-    FRACTION_MATCH = re.compile(r'^\s*-?\s*\d+\s*\/\s*\d+\s*$')
+    FRACTION_MATCH = re.compile(r"^\s*-?\s*\d+\s*\/\s*\d+\s*$")
     # matches mixed numbers such as '1 1/2' with any number of spaces and with common
     # separators of - (hyphen) and the word 'and' between the whole number and fraction part
-    MIXED_NUMBER_MATCH = re.compile(r'^\s*-?\s*\d+(\s+|\s+and\s+|\s*\-\s*)\d+\s*\/\s*\d+\s*$')
+    MIXED_NUMBER_MATCH = re.compile(r"^\s*-?\s*\d+(\s+|\s+and\s+|\s*\-\s*)\d+\s*\/\s*\d+\s*$")
 
     def __init__(
         self,
@@ -73,17 +74,17 @@ class FractionField(forms.Field):
             # including whole numbers) and numerator is falsey (should be 0)
             # just return the whole number.
             if (whole_number or whole_number == 0) and not numerator and self.use_mixed_numbers:
-                return '%s' % whole_number
+                return "%s" % whole_number
 
             if whole_number and self.use_mixed_numbers:
-                fraction_string = '%d' % whole_number
+                fraction_string = "%d" % whole_number
             else:
-                fraction_string = ''
+                fraction_string = ""
 
-            fraction_string = '%s %d/%d' % (fraction_string, numerator, denominator)
+            fraction_string = "%s %d/%d" % (fraction_string, numerator, denominator)
 
         except (ValueError, InvalidOperation) as e:
-            fraction_string = '%s' % value
+            fraction_string = "%s" % value
 
         return fraction_string.strip()
 
@@ -110,7 +111,7 @@ class FractionField(forms.Field):
                 # whitespace OR the word 'and' with or without spaces OR a hyphen with
                 # or without surrounding spaces, followed by another digit, a /, then a digit
                 # examples: 1 1/2, 1-1/2, 1 - 1/2, 1 and 1/2, etc.
-                raise ValidationError(self.error_messages['invalid'], code='invalid')
+                raise ValidationError(self.error_messages["invalid"], code="invalid")
 
             fraction = quantity_to_fraction(value)
         else:
@@ -154,21 +155,21 @@ class DecimalFractionField(FractionField):
     """
 
     default_error_messages = {
-        'invalid': _('Enter a fraction such as 1 1/4 or 1/4.'),
-        'max_digits': ngettext_lazy(
-            'Ensure that there are no more than %(max)s digit in total.',
-            'Ensure that there are no more than %(max)s digits in total.',
-            'max',
+        "invalid": _("Enter a fraction such as 1 1/4 or 1/4."),
+        "max_digits": ngettext_lazy(
+            "Ensure that there are no more than %(max)s digit in total.",
+            "Ensure that there are no more than %(max)s digits in total.",
+            "max",
         ),
-        'max_decimal_places': ngettext_lazy(
-            'Ensure that there are no more than %(max)s decimal place.',
-            'Ensure that there are no more than %(max)s decimal places.',
-            'max',
+        "max_decimal_places": ngettext_lazy(
+            "Ensure that there are no more than %(max)s decimal place.",
+            "Ensure that there are no more than %(max)s decimal places.",
+            "max",
         ),
-        'max_whole_digits': ngettext_lazy(
-            'Ensure that there are no more than %(max)s digit before the decimal point.',
-            'Ensure that there are no more than %(max)s digits before the decimal point.',
-            'max',
+        "max_whole_digits": ngettext_lazy(
+            "Ensure that there are no more than %(max)s digit before the decimal point.",
+            "Ensure that there are no more than %(max)s digits before the decimal point.",
+            "max",
         ),
     }
 
@@ -197,9 +198,9 @@ class DecimalFractionField(FractionField):
         self.use_mixed_numbers = use_mixed_numbers
         self.max_value, self.min_value = max_value, min_value
 
-        self.decimal_places = kwargs.pop('decimal_places', None)
-        self.max_digits = kwargs.pop('max_digits', None)
-        self.round_decimal = kwargs.pop('round_decimal', False)
+        self.decimal_places = kwargs.pop("decimal_places", None)
+        self.max_digits = kwargs.pop("max_digits", None)
+        self.round_decimal = kwargs.pop("round_decimal", False)
 
         super().__init__(*args, **kwargs)
 
@@ -228,12 +229,12 @@ class DecimalFractionField(FractionField):
                 # whitespace OR the word 'and' with or without spaces OR a hyphen with
                 # or without surrounding spaces, followed by another digit, a /, then a digit
                 # examples: 1 1/2, 1-1/2, 1 - 1/2, 1 and 1/2, etc.
-                raise ValidationError(self.error_messages['invalid'], code='invalid')
+                raise ValidationError(self.error_messages["invalid"], code="invalid")
 
             try:
                 value = quantity_to_decimal(value)
             except DecimalException:
-                raise ValidationError(self.error_messages['invalid'], code='invalid')
+                raise ValidationError(self.error_messages["invalid"], code="invalid")
         else:
             value = Decimal(value)
 
@@ -250,8 +251,8 @@ class DecimalFractionField(FractionField):
         # expect due to the max_digits handling.  It might be better
         # to just have users handle rounding and digit manipulation
         # themselves in Form.clean_FOO()
-        quantize_string = '0' * self.decimal_places
-        quantize_string = '.%s' % quantize_string
+        quantize_string = "0" * self.decimal_places
+        quantize_string = ".%s" % quantize_string
         # round to max number of decimal places
         value = value.quantize(Decimal(quantize_string))
         sign, digittuple, exponent = value.as_tuple()
@@ -272,14 +273,14 @@ class DecimalFractionField(FractionField):
             allowed_decimals = decimals
 
         # this will give us '0' or '00', etc.
-        quantize_string = '0'
+        quantize_string = "0"
         if allowed_decimals > 0:
             quantize_string = quantize_string * allowed_decimals
             # if at least one decimal place, drop a decimal point in front.
             # if no decimal places can be used to reac max_digits then
             # use no leading decimal, causing Decimal.quantize() to round to
             # a whole number
-            quantize_string = '.%s' % quantize_string
+            quantize_string = ".%s" % quantize_string
         value = value.quantize(Decimal(quantize_string))
         return value
 
@@ -303,7 +304,7 @@ class DecimalFractionField(FractionField):
         # since it is never equal to itself. However, NaN is the only value that
         # isn't equal to itself, so we can use this to identify NaN
         if value != value or value == Decimal("Inf") or value == Decimal("-Inf"):
-            raise ValidationError(self.error_messages['invalid'], code='invalid')
+            raise ValidationError(self.error_messages["invalid"], code="invalid")
 
         # max digits/decimal places validation.  Taken from django 1.8 forms.DecimalField
         # until this lib stops support django 1.8.  After that this can use
@@ -322,15 +323,15 @@ class DecimalFractionField(FractionField):
 
         if self.max_digits is not None and digits > self.max_digits:
             raise ValidationError(
-                self.error_messages['max_digits'],
-                code='max_digits',
-                params={'max': self.max_digits},
+                self.error_messages["max_digits"],
+                code="max_digits",
+                params={"max": self.max_digits},
             )
         if self.decimal_places is not None and decimals > self.decimal_places:
             raise ValidationError(
-                self.error_messages['max_decimal_places'],
-                code='max_decimal_places',
-                params={'max': self.decimal_places},
+                self.error_messages["max_decimal_places"],
+                code="max_decimal_places",
+                params={"max": self.decimal_places},
             )
         if (
             self.max_digits is not None
@@ -338,8 +339,8 @@ class DecimalFractionField(FractionField):
             and whole_digits > (self.max_digits - self.decimal_places)
         ):
             raise ValidationError(
-                self.error_messages['max_whole_digits'],
-                code='max_whole_digits',
-                params={'max': (self.max_digits - self.decimal_places)},
+                self.error_messages["max_whole_digits"],
+                code="max_whole_digits",
+                params={"max": (self.max_digits - self.decimal_places)},
             )
         return value

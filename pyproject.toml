@@ -6,7 +6,6 @@ django_settings_module = "test_project.frac.frac.settings"
 
 [tool.black]
 line-length = 120
-skip-string-normalization = true
 exclude = '''
   migrations
 '''

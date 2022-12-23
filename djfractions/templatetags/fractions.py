@@ -2,19 +2,20 @@ import fractions
 from decimal import InvalidOperation
 from typing import Any
 
+from django import template
 
 # The try/accept is not working with mypy so for now just always use this.
 from typing_extensions import TypedDict
+
+from djfractions import DEFAULT_MAX_DENOMINATOR, get_fraction_parts, get_fraction_unicode_entity
+from djfractions.exceptions import NoHtmlUnicodeEntity
+
 # try:
 #     from typing import TypedDict
 # except ImportError:
 #     # temporary until all python versions < 3.8 are dropped
 #     from typing_extensions import TypedDict
 
-from django import template
-
-from djfractions import get_fraction_parts, get_fraction_unicode_entity, DEFAULT_MAX_DENOMINATOR
-from djfractions.exceptions import NoHtmlUnicodeEntity
 
 register = template.Library()
 
@@ -27,7 +28,7 @@ class FractionDisplayData(TypedDict):
     allow_mixed_numbers: bool
 
 
-@register.inclusion_tag('djfractions/display_fraction.html', name='display_fraction')
+@register.inclusion_tag("djfractions/display_fraction.html", name="display_fraction")
 def display_fraction(
     value: Any,
     limit_denominator: int = DEFAULT_MAX_DENOMINATOR,
@@ -60,18 +61,18 @@ def display_fraction(
     try:
         unicode_entity = get_fraction_unicode_entity(fractions.Fraction(numerator, denominator))
     except NoHtmlUnicodeEntity as e:
-        unicode_entity = ''
+        unicode_entity = ""
 
     return {
-        'whole_number': whole_number,
-        'numerator': numerator,
-        'denominator': denominator,
-        'unicode_entity': unicode_entity,
-        'allow_mixed_numbers': allow_mixed_numbers,
+        "whole_number": whole_number,
+        "numerator": numerator,
+        "denominator": denominator,
+        "unicode_entity": unicode_entity,
+        "allow_mixed_numbers": allow_mixed_numbers,
     }
 
 
-@register.inclusion_tag('djfractions/display_fraction.html', name='display_improper_fraction')
+@register.inclusion_tag("djfractions/display_fraction.html", name="display_improper_fraction")
 def display_improper_fraction(
     value: Any, limit_denominator: int = DEFAULT_MAX_DENOMINATOR, coerce_thirds: bool = True
 ) -> FractionDisplayData:
