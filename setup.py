@@ -3,25 +3,11 @@
 import os
 import sys
 
+from setuptools import setup
+
 import djfractions
 
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
-
 version = djfractions.__version__
-
-if sys.argv[-1] == 'publish':
-    os.system('python setup.py sdist upload')
-    os.system('python setup.py bdist_wheel upload')
-    sys.exit()
-
-if sys.argv[-1] == 'tag':
-    print("Tagging the version on github:")
-    os.system(f"git tag -a {version} -m 'version {version}'")
-    os.system("git push --tags")
-    sys.exit()
 
 readme = open('README.rst').read()
 history = open('HISTORY.rst').read().replace('.. :changelog:', '')
