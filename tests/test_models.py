@@ -1,14 +1,14 @@
+import decimal
+import fractions
+
 from django.core import checks
 from django.db import models
 from django.test import TestCase
 
-import decimal
-import fractions
-
-from djfractions.models import DecimalFractionField
 import djfractions.forms
+from djfractions.models import DecimalFractionField
 
-from .models import TestModel, BadTestModel
+from .models import BadTestModel, TestModel
 
 
 class DecimalFractionFieldTest(TestCase):

@@ -1,11 +1,11 @@
-from django.core.exceptions import ValidationError
-from django.test import TestCase
-from django.template import Template, Context
-
-from decimal import Decimal
 import fractions
+from decimal import Decimal
 
-from djfractions import quantity_to_decimal, get_fraction_unicode_entity, quantity_to_fraction
+from django.core.exceptions import ValidationError
+from django.template import Context, Template
+from django.test import TestCase
+
+from djfractions import get_fraction_unicode_entity, quantity_to_decimal, quantity_to_fraction
 from djfractions.forms import DecimalFractionField, FractionField
 
 
