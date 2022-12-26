@@ -1,14 +1,14 @@
+import decimal
+import fractions
+
 from django.core import checks
 from django.db import models
 from django.test import TestCase
 
-import decimal
-import fractions
-
-from djfractions.models import DecimalFractionField
 import djfractions.forms
+from djfractions.models import DecimalFractionField
 
-from .models import TestModel, BadTestModel
+from .models import BadTestModel, TestModel
 
 
 class DecimalFractionFieldTest(TestCase):
@@ -46,7 +46,7 @@ class DecimalFractionFieldTest(TestCase):
         """
         Test that FractionDecimalField returns a forms.FractionField
         """
-        dff = DecimalFractionField(name='frac', max_digits=10, decimal_places=5)
+        dff = DecimalFractionField(name="frac", max_digits=10, decimal_places=5)
         self.assertIsInstance(dff.formfield(), djfractions.forms.FractionField)
 
     def test_max_digits_arg_is_required(self):
@@ -54,10 +54,10 @@ class DecimalFractionFieldTest(TestCase):
         Test that the max_digits arg is required and raises and exception if not there
         """
 
-        dff = BadTestModel._meta.get_field('missing_max_digits')
+        dff = BadTestModel._meta.get_field("missing_max_digits")
         errors = dff.check()
         self.assertEqual(
-            [checks.Error("DecimalFractionFields must define a 'max_digits' attribute.", obj=dff, id='fields.E132')],
+            [checks.Error("DecimalFractionFields must define a 'max_digits' attribute.", obj=dff, id="fields.E132")],
             errors,
         )
 
@@ -65,12 +65,12 @@ class DecimalFractionFieldTest(TestCase):
         """
         Test that the decimal_places arg is required and raises an exception if not there
         """
-        dff = BadTestModel._meta.get_field('missing_decimal_places')
+        dff = BadTestModel._meta.get_field("missing_decimal_places")
         errors = dff.check()
         self.assertEqual(
             [
                 checks.Error(
-                    "DecimalFractionFields must define a 'decimal_places' attribute.", obj=dff, id='fields.E130'
+                    "DecimalFractionFields must define a 'decimal_places' attribute.", obj=dff, id="fields.E130"
                 )
             ],
             errors,

@@ -1,4 +1,4 @@
-__version__ = "3.0.0"
+__version__ = "3.1.0"
 
 import fractions
 import re
@@ -101,7 +101,7 @@ def quantity_to_decimal(quantity_string: str) -> Decimal:
 
     # get actual fraction-like strings to be N/N with no spaces
     quantity_string = quantity_string.strip()
-    quantity_string = re.sub(r'\b(\d+)\s+/\s+(\d+)\b', r'\1/\2', quantity_string)
+    quantity_string = re.sub(r"\b(\d+)\s+/\s+(\d+)\b", r"\1/\2", quantity_string)
 
     if is_number(quantity_string):
         return Decimal(quantity_string)
@@ -141,7 +141,7 @@ def quantity_to_fraction(quantity_string: str) -> fractions.Fraction:
     """
     # get actual fraction-like strings to be N/N with no spaces
     quantity_string = quantity_string.strip()
-    quantity_string = re.sub(r'\b(\d+)\s+/\s+(\d+)\b', r'\1/\2', quantity_string)
+    quantity_string = re.sub(r"\b(\d+)\s+/\s+(\d+)\b", r"\1/\2", quantity_string)
     if is_number(quantity_string):
         return fractions.Fraction(quantity_string)
 

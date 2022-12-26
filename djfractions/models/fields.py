@@ -5,7 +5,6 @@ from typing import Any, List, Optional, Tuple, Union
 
 from django.core import checks
 from django.core.checks.messages import CheckMessage
-
 from django.db.models import Field
 from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
