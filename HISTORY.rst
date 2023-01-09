@@ -6,9 +6,20 @@ History
 Current
 +++++++++
 
-4.0.1 (2022-08-10)
+5.0.0 (2023-01-08)
 +++++++++
-* I'm dumb and goofed thing up, so here we are
+* Forgot about the 4.0.0 mess when I published 3.1.0, so starting fresh again.
+  There are not really any backwards incompatible changes. See the 3.1.0 release notes.
+* Fixing documentation and release history.
+
+4.0.0 (2022-08-10)
++++++++++
+* I'm dumb and goofed thing up and so this version exists on pypi
+
+3.1.0 (2022-12-26)
+++++++++++
+* Add testing on python 3.11 by @jmichalicek in #30
+* Fixed 'Polynomial regular expression used on uncontrolled data' codeQL issues which could be abused to impact performance.
 
 3.0.0 (2022-08-10)
 +++++++++
