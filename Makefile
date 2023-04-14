@@ -3,7 +3,7 @@
 setup-and-run:	setup migrate run
 
 venv:
-	 python -m venv .venv
+	python -m venv .venv
 
 run:
 	python manage.py runserver 0.0.0.0:8000
@@ -12,7 +12,7 @@ migrate:
 	python manage.py migrate
 
 dev:
-	docker-compose run --service-ports django //bin/bash
+	docker compose run --service-ports django /bin/bash
 
 install-frac:
 	pip install -e /django/bash-shell.net --no-binary :all:
