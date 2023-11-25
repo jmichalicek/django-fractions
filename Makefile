@@ -15,7 +15,7 @@ dev:
 	docker compose run --service-ports django /bin/bash
 
 install-frac:
-	pip install -e /django/bash-shell.net --no-binary :all:
+	pip install -e /django/djfractions --no-binary :all:
 
 shell:
 	docker compose exec django bash

@@ -1,5 +1,5 @@
-FROM python:3.8 AS dev
-#FROM python:3.10.5-bullseye AS dev
+FROM python:3.11
+
 LABEL maintainer="Justin Michalicek <jmichalicek@gmail.com>"
 ENV PYTHONUNBUFFERED 1
 
@@ -15,5 +15,5 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && DEBIAN_FRONTEND=noninteract
 RUN pip install pip -U
 RUN useradd -ms /bin/bash -d /django django && echo "django ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 USER django
-ENV HOME=/django PATH=/django/djfractions/.venv/bin:/django/.local/bin:$PATH LC_ALL=C.UTF-8 LANG=C.UTF-8 PYTHONIOENCODING=utf-8
+ENV HOME=/django PATH=/django/djfractions/docs/.venv/bin:/django/.local/bin:$PATH LC_ALL=C.UTF-8 LANG=C.UTF-8 PYTHONIOENCODING=utf-8
 EXPOSE 8000
