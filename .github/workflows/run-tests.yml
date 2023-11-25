@@ -21,9 +21,12 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
+        # there's probably a better way to do this, but this should be good enough
+        # for now to deal with no hash on the pip install for django
         run: |
           python -m pip install --upgrade pip
-          pip install ${{ matrix.django-version }} -r requirements-test.txt
+          pip install ${{ matrix.django-version }}
+          pip install -r requirements-test.txt
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names
